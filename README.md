@@ -1,7 +1,5 @@
  <h1 class="title">Assignment 2   </h1>
-            
-        </div>
-        <div class="paragraphs"><p>In this assignment, you will solve problems involving multiple agents.</p>
+<div class="paragraphs"><p>In this assignment, you will solve problems involving multiple agents.</p>
 <ul>
 <li>T1: (Reaching a stationary formation) Given starting positions of N vehicles, and a formation description (see below), make the vehicles reach the formation as fast as possible. (ignore vehicle-vehicle collisions)
 <ul>
