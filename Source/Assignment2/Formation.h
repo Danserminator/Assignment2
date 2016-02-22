@@ -32,6 +32,27 @@ public:
 private:
 	TArray<TArray<float>> createMatrix(TArray<AAgent *> agents, TArray<FVector2D> positions);
 
+	TArray<FVector2D> assignTasks(TArray<TArray<float>> & smatrix);
+
+	void stepOne(TArray<TArray<float>> & matrix);
+
+	float getMin(TArray<float> arr);
+
+	bool canAssign(TArray<TArray<float>> & matrix);
+
+	void stepTwo(TArray<TArray<float>> & matrix);
+
+	float getMinCol(TArray<TArray<float>> & matrix, int32 column);
+
+	TArray<TArray<int32>> stepThree(TArray<TArray<float>> & matrix);
+
+	void stepFour(TArray<TArray<float>> & matrix, TArray<TArray<int32>> & lines);
+
+	TArray<FVector2D> assign(TArray<TArray<float>> & matrix);
+
+	bool findSolution(TArray<TArray<float>> & matrix, TArray<TArray<bool>> & assignment, int32 row);
+
+	/*
 	float costHeuristic(FVector agent, FVector2D goal);
 
 	TArray<FVector2D> assignTasks(TArray<TArray<float>> matrix);
@@ -79,6 +100,7 @@ private:
 					   TArray<bool> & rowCover, TArray<bool> & colCover,
 					   float & minVal);
 
+	*/
 	//float getMinRow(TArray<float> row);
 
 	//float getMinCol(TArray<TArray<float>> matrix, int32 column);
