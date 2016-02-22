@@ -52,9 +52,10 @@ private:
 
 	bool findSolution(TArray<TArray<float>> & matrix, TArray<TArray<bool>> & assignment, int32 row);
 
-	/*
+	
 	float costHeuristic(FVector agent, FVector2D goal);
 
+	/*
 	TArray<FVector2D> assignTasks(TArray<TArray<float>> matrix);
 
 	int32 step_one(TArray<TArray<float>> & matrix);

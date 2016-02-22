@@ -622,8 +622,6 @@ float AFormation::getMin(TArray<float> arr) {
 	return minVal;
 }
 
-/*
-
 TArray<TArray<float>> AFormation::createMatrix(TArray<AAgent *> agents, TArray<FVector2D> positions)
 {
 	TArray<TArray<float>> matrix;
@@ -660,6 +658,8 @@ float AFormation::costHeuristic(FVector agent, FVector2D goal)
 {
 	return FVector2D::Distance(FVector2D(agent.X, agent.Y), goal);
 }
+
+/*
 
 TArray<FVector2D> AFormation::assignTasks(TArray<TArray<float>> matrix)
 {
