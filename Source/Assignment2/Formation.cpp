@@ -3,7 +3,7 @@
 #include "Assignment2.h"
 #include "Formation.h"
 
-#define OUTPUT
+//#define OUTPUT
 
 // Sets default values
 AFormation::AFormation()
@@ -19,9 +19,6 @@ void AFormation::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<AAgent *> agents;
-	TArray<FVector2D> positions;
-	assignPositions(agents, positions);
 }
 
 // Called every frame
@@ -39,10 +36,23 @@ void AFormation::SetupPlayerInputComponent(class UInputComponent* InputComponent
 
 void AFormation::assignPositions(TArray<AAgent *> agents, TArray<FVector2D> positions)
 {
-	//TArray<TArray<float>> matrix = createMatrix(agents, positions);
+	// Create cost matrix
+	TArray<TArray<float>> matrix = createMatrix(agents, positions);
 
-	TArray<TArray<float>> matrix;
-	TArray<float> row;
+	#ifdef OUTPUT
+	UE_LOG(LogTemp, Warning, TEXT("------------MATRIX-------------"));
+	for (int32 c = 0; c < matrix.Num(); c++) {
+		FString str;
+		for (int32 g = 0; g < matrix[c].Num(); g++) {
+			str.Append(FString::SanitizeFloat(matrix[c][g]));
+			str.Append("\t");
+		}
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------------\n\n"));
+	#endif
+	
+	//TArray<float> row;
 
 	/*
 	row = TArray<float>();
@@ -74,7 +84,7 @@ void AFormation::assignPositions(TArray<AAgent *> agents, TArray<FVector2D> posi
 	matrix.Add(row);
 	*/
 	
-	
+	/*
 	row = TArray<float>();
 	row.Add(90); row.Add(75); row.Add(75); row.Add(80);
 	matrix.Add(row);
@@ -87,20 +97,27 @@ void AFormation::assignPositions(TArray<AAgent *> agents, TArray<FVector2D> posi
 	row = TArray<float>();
 	row.Add(45); row.Add(110); row.Add(95); row.Add(115);
 	matrix.Add(row);
-	
+	*/
 
 #ifdef OUTPUT
 	TArray<TArray<float>> matrixCopy = matrix;
-#endif
-	TArray<FVector2D> agentTaskPair = assignTasks(matrix);
-
-#ifdef OUTPUT
 	float cost = 0;
-	for (int32 c = 0; c < agentTaskPair.Num(); c++) {
-		cost += matrixCopy[agentTaskPair[c].X][agentTaskPair[c].Y];
-	}
-	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Cost: %f\r\n"), cost));
 #endif
+
+	// Find cheapest allocation of tasks
+	TArray<FVector2D> assignments = assignTasks(matrix);
+
+	for (int32 c = 0; c < assignments.Num(); c++) {
+		agents[assignments[c].X]->setTarget(positions[assignments[c].Y]);
+
+		#ifdef OUTPUT
+		cost += matrixCopy[assignments[c].X][assignments[c].Y];
+		#endif
+	}
+
+	#ifdef OUTPUT
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Cost: %f\r\n"), cost));
+	#endif
 }
 
 TArray<FVector2D> AFormation::assignTasks(TArray<TArray<float>> & matrix)
@@ -527,8 +544,8 @@ TArray<FVector2D> AFormation::assign(TArray<TArray<float>> & matrix)
 				str.Append("1\t");
 			} else {
 				str.Append("0\t");
-			}
 #endif
+			}
 		}
 #ifdef OUTPUT
 		UE_LOG(LogTemp, Warning, TEXT("%s\r\n"), *str);

@@ -2,7 +2,7 @@
 
 #include "Assignment2.h"
 #include "Agent.h"
-
+#include "Engine.h"
 
 // Sets default values
 AAgent::AAgent()
@@ -12,13 +12,6 @@ AAgent::AAgent()
 
 }
 
-// Called when the game starts or when spawned
-void AAgent::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
 // Called every frame
 void AAgent::Tick( float DeltaTime )
 {
@@ -26,10 +19,15 @@ void AAgent::Tick( float DeltaTime )
 
 }
 
-// Called to bind functionality to input
-void AAgent::SetupPlayerInputComponent(class UInputComponent* InputComponent)
-{
-	Super::SetupPlayerInputComponent(InputComponent);
+void AAgent::setTarget(FVector2D t) {
+	target = t;
 
+	FVector loc = GetActorLocation();
+	FVector direction = FVector(target, 0) - FVector(loc.X, loc.Y, 0);
+	FRotator rot = FRotationMatrix::MakeFromX(direction).Rotator();
+	SetActorRotation(rot);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("{%f, %f, %f}\r\n"), rot.Roll, rot.Pitch, rot.Yaw));
+
+	SpawnDefaultController();
 }
-

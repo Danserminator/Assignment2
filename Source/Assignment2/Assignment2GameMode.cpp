@@ -7,6 +7,7 @@
 
 AAssignment2GameMode::AAssignment2GameMode()
 {
+	/*
 	// use our custom PlayerController class
 	PlayerControllerClass = AAssignment2PlayerController::StaticClass();
 
@@ -16,4 +17,5 @@ AAssignment2GameMode::AAssignment2GameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+	*/
 }
