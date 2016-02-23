@@ -30,6 +30,8 @@ public:
 	void assignPositions(TArray<AAgent *> agents, TArray<FVector2D> positions);
 
 private:
+	void adjustPositions(TArray<AAgent *> & agents, TArray<FVector2D> & positions);
+
 	TArray<TArray<float>> createMatrix(TArray<AAgent *> agents, TArray<FVector2D> positions);
 
 	TArray<FVector2D> assignTasks(TArray<TArray<float>> & smatrix);

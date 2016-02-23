@@ -11,6 +11,7 @@ AFormation::AFormation()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	SetActorLocation(FVector(0, 0, 0));
+	SetActorEnableCollision(false);
 
 }
 
@@ -36,6 +37,8 @@ void AFormation::SetupPlayerInputComponent(class UInputComponent* InputComponent
 
 void AFormation::assignPositions(TArray<AAgent *> agents, TArray<FVector2D> positions)
 {
+	adjustPositions(agents, positions);
+
 	// Create cost matrix
 	TArray<TArray<float>> matrix = createMatrix(agents, positions);
 
@@ -637,6 +640,36 @@ float AFormation::getMin(TArray<float> arr) {
 	}
 
 	return minVal;
+}
+
+void AFormation::adjustPositions(TArray<AAgent *> & agents, TArray<FVector2D> & positions)
+{
+	float yMin = std::numeric_limits<float>::infinity();
+	float yMax = std::numeric_limits<float>::min();
+	float xMin = std::numeric_limits<float>::infinity();
+	float xMax = std::numeric_limits<float>::min(); 
+
+	// Find spread of agents
+	FVector loc;
+	for (int32 c = 0; c < agents.Num(); c++) {
+		loc = agents[c]->GetActorLocation();
+
+		if (yMax < loc.Y) yMax = loc.Y;
+		if (yMin > loc.Y) yMin = loc.Y;
+		if (xMax < loc.X) xMax = loc.X;
+		if (xMin > loc.X) xMin = loc.X;
+	}
+
+	// Move formation to "center of mass"
+	float yPos = ((yMax - yMin) / 2) + yMin;
+	float xPos = ((xMax - xMin) / 2) + xMin;
+	FVector2D location = FVector2D(xPos, yPos);		// TODO: Faktiskt teleportera formationen dit?
+
+	// Adjust formation positions to new location
+	loc = GetActorLocation();
+	for (int32 c = 0; c < positions.Num(); c++) {
+		positions[c] += location;
+	}
 }
 
 TArray<TArray<float>> AFormation::createMatrix(TArray<AAgent *> agents, TArray<FVector2D> positions)

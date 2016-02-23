@@ -65,8 +65,14 @@ void AMapGenerator::generateFormation(TArray<FVector2D> & positions)
 	int32 yLoc[] = { 0,1,2,3,0,1,2,3,1,2 };				// Y-locations for formation
 	int32 xLoc[] = { 0,0,0,0,1,1,1,1,2,2 };				// X-locations for formation
 
+	int32 yMax = 0, xMax = 0;
 	for (int32 c = 0; c < num; c++) {
-		positions.Add(gridToLocation(xLoc[c] * d, yLoc[c] * d));
+		if (yMax < yLoc[c]) yMax = yLoc[c];
+		if (xMax < xLoc[c]) xMax = xLoc[c];
+	}
+
+	for (int32 c = 0; c < num; c++) {
+		positions.Add(gridToLocation((xLoc[c] - (xMax / 2)) * d, (yLoc[c] - (yMax / 2)) * d));
 		#ifdef OUTPUT
 		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("Position #%d: {%f, %f}\r\n"), c, positions[c].X, positions[c].Y));
 		#endif
