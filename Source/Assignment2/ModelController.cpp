@@ -10,44 +10,53 @@ void AModelController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (searching) {
+		DrawDebugCircle(GWorld->GetWorld(), agent->GetActorLocation(), R, radiusSegments, radiusColor,
+						false, 0.1, 0, 1, FVector(0, 1, 0), FVector(1, 0, 0), false);
+		//DrawDebugPoint(GWorld->GetWorld(), to3D(target), searchSize, searchColor, false, 0.1, 0);
+	}
 }
 
 void AModelController::setTarget() {
 	findNewAgents();
 
-	// Approach target if there are still unseen agents
-	if (unseenAgents.Num() > 0) {
+	if (unseenAgents.Num() > 0) {							// Approach target if there are still unseen agents
+		searching = true;
 		target = approachAgents();
-	} else {	// Otherwise move towards assigned position in formation
+	} else {												// Otherwise move towards assigned position in formation
 		try {
 			target = formation->getTarget(formationPosition);
-		} catch (std::exception e) {	// Stand still if not all agents have found all other agents yet
-			target = to2D(agent->GetActorLocation());	// TODO: Kanske borde göra approachAgents() en-några gånger till?
+			searching = false;
+		} catch (std::exception e) {						// Formation throws exception if all agents havent found each other
+			target = approachAgents();						// TODO: Annat här?
 		}
 	}
 }
 
 void AModelController::findNewAgents()
 {
-	if (unseenAgents.Num() > 0) {	// Do nothing if all agents are already found
+	if (unseenAgents.Num() > 0) {							// Do nothing if all agents are already found
 		FVector2D curLoc = to2D(agent->GetActorLocation());
 
-		if (R < 0) {				// R < 0 means all agents know about all other agents already
+		if (R <= 0) {										// R < 0 means all agents know about all other agents already
 			seenAgents = unseenAgents;
 			unseenAgents.Empty();
 		} else {
 			float dist;
 			for (int32 c = 0; c < unseenAgents.Num(); c++) {
 				dist = FVector2D::Distance(curLoc, to2D(unseenAgents[c]->GetActorLocation()));
-				if (dist <= R) {
-					seenAgents.Add(unseenAgents[c]);
+				if (dist <= R) {							// If agent is withing radius
+					if (unseenAgents[c]->GetActorLocation() != agent->GetActorLocation()) {
+						seenAgents.Add(unseenAgents[c]);	// Dont add oneself to seen agents
+					}
+
 					unseenAgents.RemoveAt(c);
 					c--;
 				}
 			}
 		}
 		
-		if (unseenAgents.Num() == 0) {	// If all agents are found, signal formation
+		if (unseenAgents.Num() == 0) {						// If all agents are found, signal formation
 			formationPosition = formation->foundAllAgents(curLoc);
 		}
 	}
@@ -55,9 +64,12 @@ void AModelController::findNewAgents()
 
 FVector2D AModelController::approachAgents()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("%d"), seenAgents.Num()));
+	FVector2D goal;
+	for (int32 c = 0; c < seenAgents.Num(); c++) {
+		goal += to2D(seenAgents[c]->GetActorLocation() - agent->GetActorLocation());
+	}
 
-	return FVector2D();
+	return goal;
 }
 
 bool AModelController::waypointReached()

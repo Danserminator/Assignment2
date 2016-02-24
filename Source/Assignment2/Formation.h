@@ -19,14 +19,15 @@ private:
 	FVector2D location;
 	FVector2D velocity;
 
-	TArray<FVector2D> agentPositions;
-	TArray<FVector2D> formationPositions;
+	TArray<FVector2D> agentPositions;				// Positions of all agents that have found all other agents
+	TArray<FVector2D> formationPositions;			// Position of formation relative to origin of formation
 
-	TArray<FVector2D> assignedPositions;
+	TArray<FVector2D> assignedPositions;			// Which position in the formation an agent has been assigned
+			// TODO: Nu använder jag bara .Y i formationPositions, göra om så assignedpositions har faktiska positionen?
 
-	bool draw = false;
-	FVector size = FVector(0, 0, 20);
-	FColor color = FColor::Red;
+	bool drawFormation = false;						// Wether to draw the formation positions or not
+	FVector formationSize = FVector(0, 0, 20);		// Size of line representing formation positions
+	FColor formationColor = FColor::Red;			// Color of line representing formation positions
 
 public:
 	// Sets default values for this pawn's properties

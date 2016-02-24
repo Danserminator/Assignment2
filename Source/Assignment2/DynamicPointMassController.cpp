@@ -25,42 +25,41 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!play) {
-		return;
+	FVector aCopy;
+	if (play) {
+		#ifdef OUTPUT
+		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej")));
+		#endif
+
+		setTarget();
+
+		if (waypointReached()) {
+			// TODO
+		} else {
+			acceleration = getAcceleration();
+
+			drawLine(5 * acceleration, accelerationColor);
+
+			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
+
+			acceleration *= deltaSec;
+
+			velocity += acceleration;
+
+			velocity = velocity.GetClampedToSize(-vMax, vMax);
+
+			FVector currentLocation = agent->GetActorLocation();
+
+			FVector newLocation = currentLocation + (velocity * deltaSec);
+
+			setRotation();
+
+			agent->SetActorLocation(newLocation);
+			//agent->SetActorLocationAndRotation(newLocation, rotation);
+		}
 	}
 
-#ifdef OUTPUT
-	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej")));
-#endif
-
-	setTarget();
-
-	if (waypointReached()) {
-		// TODO
-	} else {
-		acceleration = getAcceleration();
-
-		drawLine(5 * acceleration, FColor::Yellow);
-
-		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
-
-		acceleration *= deltaSec;
-
-		velocity += acceleration;
-
-		velocity = velocity.GetClampedToSize(-vMax, vMax);
-
-		drawLine(5 * velocity, FColor::Blue);
-
-		FVector currentLocation = agent->GetActorLocation();
-
-		FVector newLocation = currentLocation + (velocity * deltaSec);
-
-		setRotation();
-
-		agent->SetActorLocation(newLocation);
-		//agent->SetActorLocationAndRotation(newLocation, rotation);
-	}
+	drawLine(5 * velocity, velocityColor);
 }
 
 bool ADynamicPointMassController::waypointReached()

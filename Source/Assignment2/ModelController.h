@@ -34,7 +34,15 @@ protected:
 	FVector velocity;
 
 	float const errorTolerance = 1;
+	
+	FColor velocityColor = FColor::Blue;		// Color of line representing velocity
+	FColor accelerationColor = FColor::Yellow;	// Color of line representing acceleration
+	FColor searchColor = FColor::Magenta;		// Color of line representing target when searching for more agents
+	FColor radiusColor = FColor(0, 200, 0);		// Color of the circle representing radius
 
+	bool searching = false;						// Whether the agent is searching for nearby actors or not
+	float searchSize = 10;						// Size of point representing target when searching for more agents
+	float radiusSegments = 24;					// # of segments in the circle representing radius
 
 public:
 	// Called every frame
