@@ -55,6 +55,8 @@ void AModelController::findNewAgents()
 
 FVector2D AModelController::approachAgents()
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("%d"), seenAgents.Num()));
+
 	return FVector2D();
 }
 

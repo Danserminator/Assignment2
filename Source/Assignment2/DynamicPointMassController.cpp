@@ -35,8 +35,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 
 	setTarget();
 
-	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("%s"), *target.ToString()));
-
 	if (waypointReached()) {
 		// TODO
 	} else {

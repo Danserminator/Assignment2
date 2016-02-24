@@ -27,6 +27,15 @@ void AFormation::Tick(float DeltaTime)
 
 	location += velocity * GWorld->GetWorld()->GetDeltaSeconds();
 
+	if (draw) {
+		FVector loc;
+		FVector formationLoc = FVector(location, 0);
+		for (int32 c = 0; c < formationPositions.Num(); c++) {
+			loc = FVector(formationPositions[c], 0) + formationLoc;
+			DrawDebugLine(GWorld->GetWorld(), loc, loc + size, color, false, 0.1, 0, 1);
+		}
+	}
+
 	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("%s\r\n"), *location.ToString()));
 }
 
@@ -649,6 +658,8 @@ void AFormation::moveFormation()
 	float yPos = ((yMax - yMin) / 2) + yMin;
 	float xPos = ((xMax - xMin) / 2) + xMin;
 	location = FVector2D(xPos, yPos);
+
+	draw = true;
 }
 
 TArray<TArray<float>> AFormation::createMatrix()

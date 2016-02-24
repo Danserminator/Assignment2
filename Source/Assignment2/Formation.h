@@ -24,6 +24,10 @@ private:
 
 	TArray<FVector2D> assignedPositions;
 
+	bool draw = false;
+	FVector size = FVector(0, 0, 20);
+	FColor color = FColor::Red;
+
 public:
 	// Sets default values for this pawn's properties
 	AFormation();
