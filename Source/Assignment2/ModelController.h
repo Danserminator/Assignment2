@@ -5,6 +5,7 @@
 #include "AIController.h"
 #include "Engine.h"
 #include "Agent.h"
+#include "Formation.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "ModelController.generated.h"
 
@@ -18,11 +19,17 @@ class ASSIGNMENT2_API AModelController : public AAIController
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AgentPlay)
-		bool play;
+	bool play;
 	
 protected:
+
 	AAgent * agent;
+	AFormation * formation;
+	TArray<AAgent *> seenAgents, unseenAgents;
+
+	float R;
 	FVector2D target;
+	int32 formationPosition;
 
 	FVector velocity;
 
@@ -34,6 +41,12 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	
 protected:
+	virtual void setTarget();
+
+	virtual void findNewAgents();
+
+	virtual FVector2D approachAgents();
+
 	virtual bool waypointReached();
 
 	virtual FRotator getRotation(FVector start, FVector2D target) const {

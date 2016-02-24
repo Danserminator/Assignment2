@@ -14,7 +14,9 @@ void ADynamicPointMassController::BeginPlay()
 {
 	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
 
-	target = agent->target;
+	R = agent->R;
+	formation = agent->formation;
+	unseenAgents = agent->unseenAgents;
 }
 
 
@@ -30,6 +32,10 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 #ifdef OUTPUT
 	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej")));
 #endif
+
+	setTarget();
+
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("%s"), *target.ToString()));
 
 	if (waypointReached()) {
 		// TODO
@@ -90,7 +96,6 @@ FVector ADynamicPointMassController::getAcceleration() const
 	newAcceleration = FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
 
 	newAcceleration = aMax * newAcceleration / mass;
-
 
 	float velocityLength = UKismetMathLibrary::VSize(velocity);
 

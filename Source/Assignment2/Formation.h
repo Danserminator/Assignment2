@@ -3,8 +3,8 @@
 #pragma once
 
 #include "GameFramework/Pawn.h"
-#include "Agent.h"
 #include <limits>
+#include <stdexcept>
 #include "Engine.h"
 #include "Formation.generated.h"
 
@@ -12,6 +12,17 @@ UCLASS()
 class ASSIGNMENT2_API AFormation : public APawn
 {
 	GENERATED_BODY()
+
+private:
+	int32 numAgents;
+
+	FVector2D location;
+	FVector2D velocity;
+
+	TArray<FVector2D> agentPositions;
+	TArray<FVector2D> formationPositions;
+
+	TArray<FVector2D> assignedPositions;
 
 public:
 	// Sets default values for this pawn's properties
@@ -26,15 +37,23 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Stationary Formation")
-	void assignPositions(TArray<AAgent *> agents, TArray<FVector2D> positions);
+	UFUNCTION(BlueprintCallable, Category = "Formation")
+	void initFormation(TArray<FVector2D> positions, FVector velocity);
+
+	void setNumAgents(int32 n);
+
+	int32 foundAllAgents(FVector2D location);
+
+	FVector2D getTarget(int32 i);
 
 private:
-	void adjustPositions(TArray<AAgent *> & agents, TArray<FVector2D> & positions);
+	void assignPositions();
 
-	TArray<TArray<float>> createMatrix(TArray<AAgent *> agents, TArray<FVector2D> positions);
+	void moveFormation();
 
-	TArray<FVector2D> assignTasks(TArray<TArray<float>> & smatrix);
+	TArray<TArray<float>> createMatrix();
+
+	TArray<FVector2D> assignTasks(TArray<TArray<float>> & matrix);
 
 	void stepOne(TArray<TArray<float>> & matrix);
 
@@ -54,8 +73,7 @@ private:
 
 	bool findSolution(TArray<TArray<float>> & matrix, TArray<TArray<bool>> & assignment, int32 row);
 
-	
-	float costHeuristic(FVector agent, FVector2D goal);
+	float costHeuristic(FVector2D agent, FVector2D goal);
 
 	/*
 	TArray<FVector2D> assignTasks(TArray<TArray<float>> matrix);

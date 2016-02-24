@@ -5,6 +5,8 @@
 #include "Engine/LevelScriptActor.h"
 #include "Agent.h"
 #include "Block.h"
+#include "Formation.h"
+#include <iostream>
 #include "MapGenerator.generated.h"
 
 /**
@@ -20,7 +22,6 @@ class ASSIGNMENT2_API AMapGenerator : public ALevelScriptActor
 	const FString obstacleFile = "obstacles.txt";				// Name of file that contains obstacles
 	const FString positionsFile = "positions.txt";				// Name of file that contains agent positions
 
-	const float d = 15;											// Separation distance
 	const float gridSize = 1;									// Scalar value for generated map
 
 	public:
@@ -28,10 +29,10 @@ class ASSIGNMENT2_API AMapGenerator : public ALevelScriptActor
 	void generateObstacles();
 
 	UFUNCTION(BlueprintCallable, Category = "Map Generation")
-	void generateAgents(TArray<AAgent *> & agents);
+	void generateAgents(float r, AFormation * formation, TArray<AAgent *> & agents);
 
 	UFUNCTION(BlueprintCallable, Category = "Map Generation")
-	void generateFormation(TArray<FVector2D> & positions);
+	void generateFormation(float d, TArray<FVector2D> & positions);
 
 	private:
 	TArray<TArray<float>> readData(const FString fileName);

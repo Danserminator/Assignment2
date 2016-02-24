@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Character.h"
+#include "Formation.h"
 #include "Agent.generated.h"
 
 UCLASS()
@@ -11,15 +12,13 @@ class ASSIGNMENT2_API AAgent : public ACharacter
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stationary Formation")
-	FVector2D target;
+	float R;
+	AFormation * formation;
+	TArray<AAgent *> unseenAgents;
 
 	// Sets default values for this character's properties
 	AAgent();
-	
-	// Called every frame
-	virtual void Tick( float DeltaSeconds ) override;
 
-	void setTarget(FVector2D t);
+	void init(float r, AFormation * f, TArray<AAgent *> agents);
 	
 };

@@ -10,8 +10,6 @@ AFormation::AFormation()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	SetActorLocation(FVector(0, 0, 0));
-	SetActorEnableCollision(false);
 
 }
 
@@ -26,6 +24,10 @@ void AFormation::BeginPlay()
 void AFormation::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	location += velocity * GWorld->GetWorld()->GetDeltaSeconds();
+
+	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("%s\r\n"), *location.ToString()));
 }
 
 // Called to bind functionality to input
@@ -35,12 +37,46 @@ void AFormation::SetupPlayerInputComponent(class UInputComponent* InputComponent
 
 }
 
-void AFormation::assignPositions(TArray<AAgent *> agents, TArray<FVector2D> positions)
+void AFormation::initFormation(TArray<FVector2D> positions, FVector velocity)
 {
-	adjustPositions(agents, positions);
+	formationPositions = positions;
+	this->velocity = FVector2D(velocity.X, velocity.Y);
+}
+
+void AFormation::setNumAgents(int32 n)
+{
+	numAgents = n;
+}
+
+int32 AFormation::foundAllAgents(FVector2D location)
+{
+	int32 index = agentPositions.Num();
+
+	agentPositions.Add(location);
+
+	if (agentPositions.Num() == numAgents) {
+		assignPositions();
+	}
+
+	return index;
+}
+
+FVector2D AFormation::getTarget(int32 i)
+{
+	if (agentPositions.Num() == numAgents) {
+		return (formationPositions[assignedPositions[i].Y] + location);
+	}
+
+	throw std::exception("");
+}
+
+void AFormation::assignPositions()
+{
+	// Move formation origin to center of mass
+	moveFormation();
 
 	// Create cost matrix
-	TArray<TArray<float>> matrix = createMatrix(agents, positions);
+	TArray<TArray<float>> matrix = createMatrix();
 
 	#ifdef OUTPUT
 	UE_LOG(LogTemp, Warning, TEXT("------------MATRIX-------------"));
@@ -54,53 +90,6 @@ void AFormation::assignPositions(TArray<AAgent *> agents, TArray<FVector2D> posi
 	}
 	UE_LOG(LogTemp, Warning, TEXT("-------------------------------\n\n"));
 	#endif
-	
-	//TArray<float> row;
-
-	/*
-	row = TArray<float>();
-	row.Add(20); row.Add(25); row.Add(22); row.Add(28);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(15); row.Add(18); row.Add(23); row.Add(17);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(19); row.Add(17); row.Add(21); row.Add(24);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(25); row.Add(23); row.Add(24); row.Add(24);
-	matrix.Add(row);
-	*/
-
-	/*
-	row = TArray<float>();
-	row.Add(1); row.Add(2); row.Add(3); row.Add(4);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(2); row.Add(4); row.Add(6); row.Add(8);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(3); row.Add(6); row.Add(9); row.Add(12);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(4); row.Add(8); row.Add(12); row.Add(16);
-	matrix.Add(row);
-	*/
-	
-	/*
-	row = TArray<float>();
-	row.Add(90); row.Add(75); row.Add(75); row.Add(80);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(35); row.Add(85); row.Add(55); row.Add(65);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(125); row.Add(95); row.Add(90); row.Add(105);
-	matrix.Add(row);
-	row = TArray<float>();
-	row.Add(45); row.Add(110); row.Add(95); row.Add(115);
-	matrix.Add(row);
-	*/
 
 #ifdef OUTPUT
 	TArray<TArray<float>> matrixCopy = matrix;
@@ -108,17 +97,13 @@ void AFormation::assignPositions(TArray<AAgent *> agents, TArray<FVector2D> posi
 #endif
 
 	// Find cheapest allocation of tasks
-	TArray<FVector2D> assignments = assignTasks(matrix);
-
-	for (int32 c = 0; c < assignments.Num(); c++) {
-		agents[assignments[c].X]->setTarget(positions[assignments[c].Y]);
-
-		#ifdef OUTPUT
-		cost += matrixCopy[assignments[c].X][assignments[c].Y];
-		#endif
-	}
+	assignedPositions = assignTasks(matrix);
 
 	#ifdef OUTPUT
+	for (int32 c = 0; c < assignments.Num(); c++) {
+		cost += matrixCopy[assignedPositions[c].X][assignedPositions[c].Y];
+	}
+
 	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Cost: %f\r\n"), cost));
 	#endif
 }
@@ -642,7 +627,7 @@ float AFormation::getMin(TArray<float> arr) {
 	return minVal;
 }
 
-void AFormation::adjustPositions(TArray<AAgent *> & agents, TArray<FVector2D> & positions)
+void AFormation::moveFormation()
 {
 	float yMin = std::numeric_limits<float>::infinity();
 	float yMax = std::numeric_limits<float>::min();
@@ -650,9 +635,9 @@ void AFormation::adjustPositions(TArray<AAgent *> & agents, TArray<FVector2D> & 
 	float xMax = std::numeric_limits<float>::min(); 
 
 	// Find spread of agents
-	FVector loc;
-	for (int32 c = 0; c < agents.Num(); c++) {
-		loc = agents[c]->GetActorLocation();
+	FVector2D loc;
+	for (int32 c = 0; c < agentPositions.Num(); c++) {
+		loc = agentPositions[c];
 
 		if (yMax < loc.Y) yMax = loc.Y;
 		if (yMin > loc.Y) yMin = loc.Y;
@@ -663,28 +648,22 @@ void AFormation::adjustPositions(TArray<AAgent *> & agents, TArray<FVector2D> & 
 	// Move formation to "center of mass"
 	float yPos = ((yMax - yMin) / 2) + yMin;
 	float xPos = ((xMax - xMin) / 2) + xMin;
-	FVector2D location = FVector2D(xPos, yPos);		// TODO: Faktiskt teleportera formationen dit?
-
-	// Adjust formation positions to new location
-	loc = GetActorLocation();
-	for (int32 c = 0; c < positions.Num(); c++) {
-		positions[c] += location;
-	}
+	location = FVector2D(xPos, yPos);
 }
 
-TArray<TArray<float>> AFormation::createMatrix(TArray<AAgent *> agents, TArray<FVector2D> positions)
+TArray<TArray<float>> AFormation::createMatrix()
 {
 	TArray<TArray<float>> matrix;
 
-	for (int32 c = 0; c < agents.Num(); c++) {
+	for (int32 c = 0; c < agentPositions.Num(); c++) {
 		TArray<float> agentCosts;
 
 		#ifdef OUTPUT
 		FString str;
 		#endif
 
-		for (int32 g = 0; g < positions.Num(); g++) {
-			float cost = costHeuristic(agents[c]->GetActorLocation(), positions[g]);
+		for (int32 g = 0; g < formationPositions.Num(); g++) {
+			float cost = costHeuristic(agentPositions[c], (formationPositions[g] + location));
 			agentCosts.Add(cost);
 
 			#ifdef OUTPUT
@@ -704,9 +683,9 @@ TArray<TArray<float>> AFormation::createMatrix(TArray<AAgent *> agents, TArray<F
 	return matrix;
 }
 
-float AFormation::costHeuristic(FVector agent, FVector2D goal)
+float AFormation::costHeuristic(FVector2D agent, FVector2D goal)
 {
-	float cost = FVector2D::Distance(FVector2D(agent.X, agent.Y), goal);
+	float cost = FVector2D::Distance(agent, goal);
 	return cost * cost;
 }
 

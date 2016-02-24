@@ -12,22 +12,11 @@ AAgent::AAgent()
 
 }
 
-// Called every frame
-void AAgent::Tick( float DeltaTime )
+void AAgent::init(float r, AFormation * f, TArray<AAgent *> agents)
 {
-	Super::Tick( DeltaTime );
+	R = r;
+	formation = f;
+	unseenAgents = agents;
 
-}
-
-void AAgent::setTarget(FVector2D t) {
-	target = t;
-
-	FVector loc = GetActorLocation();
-	FVector direction = FVector(target, 0) - FVector(loc.X, loc.Y, 0);
-	FRotator rot = FRotationMatrix::MakeFromX(direction).Rotator();
-	SetActorRotation(rot);
-
-	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("{%f, %f, %f}\r\n"), rot.Roll, rot.Pitch, rot.Yaw));
-
-	SpawnDefaultController();
+	SpawnDefaultController();	
 }

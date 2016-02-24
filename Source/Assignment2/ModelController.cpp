@@ -12,6 +12,52 @@ void AModelController::Tick(float DeltaTime)
 
 }
 
+void AModelController::setTarget() {
+	findNewAgents();
+
+	// Approach target if there are still unseen agents
+	if (unseenAgents.Num() > 0) {
+		target = approachAgents();
+	} else {	// Otherwise move towards assigned position in formation
+		try {
+			target = formation->getTarget(formationPosition);
+		} catch (std::exception e) {	// Stand still if not all agents have found all other agents yet
+			target = to2D(agent->GetActorLocation());	// TODO: Kanske borde göra approachAgents() en-några gånger till?
+		}
+	}
+}
+
+void AModelController::findNewAgents()
+{
+	if (unseenAgents.Num() > 0) {	// Do nothing if all agents are already found
+		FVector2D curLoc = to2D(agent->GetActorLocation());
+
+		if (R < 0) {				// R < 0 means all agents know about all other agents already
+			seenAgents = unseenAgents;
+			unseenAgents.Empty();
+		} else {
+			float dist;
+			for (int32 c = 0; c < unseenAgents.Num(); c++) {
+				dist = FVector2D::Distance(curLoc, to2D(unseenAgents[c]->GetActorLocation()));
+				if (dist <= R) {
+					seenAgents.Add(unseenAgents[c]);
+					unseenAgents.RemoveAt(c);
+					c--;
+				}
+			}
+		}
+		
+		if (unseenAgents.Num() == 0) {	// If all agents are found, signal formation
+			formationPosition = formation->foundAllAgents(curLoc);
+		}
+	}
+}
+
+FVector2D AModelController::approachAgents()
+{
+	return FVector2D();
+}
+
 bool AModelController::waypointReached()
 {
 #ifdef OUTPUT

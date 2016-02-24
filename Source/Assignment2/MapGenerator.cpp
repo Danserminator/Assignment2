@@ -2,7 +2,6 @@
 
 #include "Assignment2.h"
 #include "MapGenerator.h"
-#include <iostream>
 
 //#define OUTPUT
 
@@ -35,7 +34,7 @@ void AMapGenerator::generateObstacles()
 	}
 }
 
-void AMapGenerator::generateAgents(TArray<AAgent *> & agents)
+void AMapGenerator::generateAgents(float r, AFormation * formation, TArray<AAgent *> & agents)
 {
 	// Get Agent blueprint
 	auto cls = StaticLoadObject(UObject::StaticClass(), nullptr,
@@ -45,6 +44,8 @@ void AMapGenerator::generateAgents(TArray<AAgent *> & agents)
 
 	// Read positions of agents
 	TArray<TArray<float>> locations = readData(positionsFile);
+
+	formation->setNumAgents(10);
 
 	// Spawn agents
 	for (int32 c = 0; c < locations.Num(); c++) {
@@ -57,9 +58,13 @@ void AMapGenerator::generateAgents(TArray<AAgent *> & agents)
 		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%f, %f}\r\n"), c, agents[c]->GetActorLocation().X, agents[c]->GetActorLocation().Y));
 		#endif
 	}
+
+	for (int32 c = 0; c < locations.Num(); c++) {
+		agents[c]->init(r, formation, agents);
+	}
 }
 
-void AMapGenerator::generateFormation(TArray<FVector2D> & positions)
+void AMapGenerator::generateFormation(float d, TArray<FVector2D> & positions)
 {
 	int32 num = 10;										// TODO: FIX?
 	int32 yLoc[] = { 0,1,2,3,0,1,2,3,1,2 };				// Y-locations for formation
