@@ -706,7 +706,8 @@ TArray<TArray<float>> AFormation::createMatrix(TArray<AAgent *> agents, TArray<F
 
 float AFormation::costHeuristic(FVector agent, FVector2D goal)
 {
-	return FVector2D::Distance(FVector2D(agent.X, agent.Y), goal);
+	float cost = FVector2D::Distance(FVector2D(agent.X, agent.Y), goal);
+	return cost * cost;
 }
 
 /*
