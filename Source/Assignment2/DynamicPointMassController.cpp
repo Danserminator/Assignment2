@@ -25,7 +25,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector aCopy;
 	if (play) {
 		#ifdef OUTPUT
 		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej")));
@@ -58,8 +57,18 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 			//agent->SetActorLocationAndRotation(newLocation, rotation);
 		}
 	}
+}
 
-	drawLine(5 * velocity, velocityColor);
+FVector2D ADynamicPointMassController::getBrakeTarget()
+{
+	FVector2D normVelocity = to2D(velocity);
+	normVelocity.Normalize();
+
+	if (to2D(velocity) < normVelocity) {
+		normVelocity = to2D(velocity);
+	}
+
+	return (to2D(agent->GetActorLocation()) + normVelocity);
 }
 
 bool ADynamicPointMassController::waypointReached()
@@ -77,6 +86,7 @@ bool ADynamicPointMassController::waypointReached()
 		} else {
 			// Can stop in this time frame.
 			velocity = FVector(0, 0, 0);
+			stopped = true;
 			return true;
 		}
 	}

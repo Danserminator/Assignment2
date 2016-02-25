@@ -25,7 +25,9 @@ void AFormation::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	location += velocity * GWorld->GetWorld()->GetDeltaSeconds();
+	if (play) {
+		location += velocity * GWorld->GetWorld()->GetDeltaSeconds();
+	}
 
 	if (drawFormation) {
 		FVector loc;
@@ -50,6 +52,11 @@ void AFormation::initFormation(TArray<FVector2D> positions, FVector velocity)
 {
 	formationPositions = positions;
 	this->velocity = FVector2D(velocity.X, velocity.Y);
+}
+
+void AFormation::togglePlay()
+{
+	play = !play;
 }
 
 void AFormation::setNumAgents(int32 n)
@@ -77,6 +84,11 @@ FVector2D AFormation::getTarget(int32 i)
 	}
 
 	throw std::exception("");
+}
+
+FVector2D AFormation::getVelocity()
+{
+	return velocity;
 }
 
 void AFormation::assignPositions()

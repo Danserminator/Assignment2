@@ -35,6 +35,8 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
+	virtual FVector2D getBrakeTarget() override;
+
 	virtual bool waypointReached() override;
 
 	virtual FVector getAcceleration() const;

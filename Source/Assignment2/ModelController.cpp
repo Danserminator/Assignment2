@@ -10,10 +10,15 @@ void AModelController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	drawLine(5 * velocity, velocityColor);
+
 	if (searching) {
-		DrawDebugCircle(GWorld->GetWorld(), agent->GetActorLocation(), R, radiusSegments, radiusColor,
-						false, 0.1, 0, 1, FVector(0, 1, 0), FVector(1, 0, 0), false);
-		//DrawDebugPoint(GWorld->GetWorld(), to3D(target), searchSize, searchColor, false, 0.1, 0);
+		if (stopped) {
+			DrawDebugCircle(GWorld->GetWorld(), agent->GetActorLocation(), R, radiusSegments, radiusColor,
+							false, 0.1, 0, 1, FVector(0, 1, 0), FVector(1, 0, 0), false);
+		} else {
+			DrawDebugPoint(GWorld->GetWorld(), to3D(target), searchSize, searchColor, false, 0.1, 0);
+		}
 	}
 }
 
@@ -24,11 +29,21 @@ void AModelController::setTarget() {
 		searching = true;
 		target = approachAgents();
 	} else {												// Otherwise move towards assigned position in formation
-		try {
-			target = formation->getTarget(formationPosition);
-			searching = false;
-		} catch (std::exception e) {						// Formation throws exception if all agents havent found each other
-			target = approachAgents();						// TODO: Annat här?
+		if (stopped) {
+			try {											// Get target from formation after finding all agents and stationary
+				target = formation->getTarget(formationPosition);
+
+				FVector2D fV = formation->getVelocity();
+				if (fV.X + fV.Y != 0) {						// TODO: > epsilon?
+					//adjustTarget(fV);
+				}
+
+				searching = false;
+			} catch (std::exception e) {
+				target = to2D(agent->GetActorLocation());	// Remain stationary until all agents have found each other
+			}
+		} else {
+			target = getBrakeTarget();
 		}
 	}
 }
@@ -58,6 +73,9 @@ void AModelController::findNewAgents()
 		
 		if (unseenAgents.Num() == 0) {						// If all agents are found, signal formation
 			formationPosition = formation->foundAllAgents(curLoc);
+			if (R > 0) {									// Stop moving after all agents have been found
+				stopped = false;
+			}
 		}
 	}
 }
@@ -70,6 +88,25 @@ FVector2D AModelController::approachAgents()
 	}
 
 	return goal;
+}
+
+void AModelController::adjustTarget(FVector2D formationVelocity)
+{
+	// http://twobitcoder.blogspot.se/2010/04/circle-collision-detection.html
+
+	FVector2D vAB = formationVelocity - to2D(velocity);
+	FVector2D pAB = to2D(formation->GetActorLocation() - agent->GetActorLocation());
+
+	float a = FVector2D::DotProduct(vAB, vAB);
+	float b = 2 * FVector2D::DotProduct(pAB, vAB);
+	float c = FVector2D::DotProduct(pAB, pAB);
+
+	float discriminant = (b*b) - (4 * a * c);
+}
+
+FVector2D AModelController::getBrakeTarget()
+{
+	return to2D(agent->GetActorLocation());
 }
 
 bool AModelController::waypointReached()

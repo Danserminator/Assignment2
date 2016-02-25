@@ -41,6 +41,7 @@ protected:
 	FColor radiusColor = FColor(0, 200, 0);		// Color of the circle representing radius
 
 	bool searching = false;						// Whether the agent is searching for nearby actors or not
+	bool stopped = true;						// Agent has stopped moving after finding all agents
 	float searchSize = 10;						// Size of point representing target when searching for more agents
 	float radiusSegments = 24;					// # of segments in the circle representing radius
 
@@ -54,6 +55,10 @@ protected:
 	virtual void findNewAgents();
 
 	virtual FVector2D approachAgents();
+
+	virtual void adjustTarget(FVector2D formationVelocity);
+
+	virtual FVector2D getBrakeTarget();
 
 	virtual bool waypointReached();
 
