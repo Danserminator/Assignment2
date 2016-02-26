@@ -25,6 +25,7 @@ private:
 	TArray<FVector2D> assignedPositions;			// Which position in the formation an agent has been assigned
 			// TODO: Nu använder jag bara .Y i formationPositions, göra om så assignedpositions har faktiska positionen?
 
+	bool play;
 	bool drawFormation = false;						// Wether to draw the formation positions or not
 	FVector formationSize = FVector(0, 0, 20);		// Size of line representing formation positions
 	FColor formationColor = FColor::Red;			// Color of line representing formation positions
@@ -45,11 +46,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Formation")
 	void initFormation(TArray<FVector2D> positions, FVector velocity);
 
+	UFUNCTION(BlueprintCallable, Category = "Formation")
+	void togglePlay();
+
 	void setNumAgents(int32 n);
 
 	int32 foundAllAgents(FVector2D location);
 
 	FVector2D getTarget(int32 i);
+
+	FVector2D getVelocity();
 
 private:
 	void assignPositions();
