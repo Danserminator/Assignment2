@@ -31,25 +31,39 @@ private:
 	TArray<FVector2D> customers;
 	TArray<AAgent *> agents;
 
-	//TMap<AAgent *, TArray<FVector2D>> routes;
+	TMap<AAgent *, TArray<FVector2D>> routes;
 
-	TMap<AAgent *, TArray<FVector2D>> simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> costumers);
+	bool done = false;
 
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Simulated Annealing")
+	void simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> costumers);
+
+	TMap<AAgent *, TArray<FVector2D>> getRoutes();
+
+	UFUNCTION(BlueprintCallable, Category = "Simulated Annealing")
+	TArray<FVector2D> getRoute(AAgent * agent);
+
+
+private:
 	TMap<AAgent *, TArray<FVector2D>> annealing();
+
+	TMap<AAgent *, TArray<FVector2D>> initialConfiguration();
 
 	TMap<AAgent *, TArray<FVector2D>> neighbour(TMap<AAgent *, TArray<FVector2D>> routes);
 	
 	TMap<AAgent *, TArray<FVector2D>> move(TMap<AAgent *, TArray<FVector2D>> routes);
 
+	TArray<FVector2D> addToRoute(AAgent * agent, TArray<FVector2D> route, FVector2D Costumer);
+
 	TMap<AAgent *, TArray<FVector2D>> replaceHighestAverage(TMap<AAgent *, TArray<FVector2D>> routes);
 
-	TMap<FVector2D, AAgent*> insertBest(TArray<FVector2D> locations, TArray<AAgent*> agent);
+	TMap<AAgent *, TArray<FVector2D>> insertBest(TMap<AAgent *, TArray<FVector2D>> routes, TArray<FVector2D> costumers, TArray<AAgent *> agents);
 	
 	float ifAddedCost(TArray<FVector2D> route, FVector2D costumer);
 
 	TArray<FVector2D> addToRoute(TArray<FVector2D> route, FVector2D costumer);
-	
-	TMap<AAgent *, TArray<FVector2D>> initialConfiguration();
 	
 	float cost(FVector2D start, FVector2D stop) const;
 
