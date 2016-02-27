@@ -3,12 +3,16 @@
 #pragma once
 
 #include "Agent.h"
+#include "VisibilityGraph.generated.h"
 
 /**
  * 
  */
-class ASSIGNMENT2_API VisibilityGraph
+UCLASS()
+class ASSIGNMENT2_API UVisibilityGraph : public UObject
 {
+	GENERATED_BODY()
+
 private:
 	TMultiMap<FVector2D, FVector2D> graph;
 
