@@ -3,15 +3,76 @@
 #include "Assignment2.h"
 #include "SimulatedAnnealing.h"
 
+#define OUTPUT
 
-void ASimulatedAnnealing::simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> customers)
+void ASimulatedAnnealing::simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> inputCustomers)
 {
+#ifdef OUTPUT1
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej")));
+#endif
+
 	this->agents = agents;
-	this->customers = customers;
+	this->customers = inputCustomers;
+
+#ifdef OUTPUT1
+	FString str;
+	str.Append("Customers: ");
+	for (int32 c = 0; c < inputCustomers.Num(); c++) {
+		str.Append("(");
+		str.Append(FString::SanitizeFloat(inputCustomers[c].Y));
+		str.Append(", ");
+		str.Append(FString::SanitizeFloat(inputCustomers[c].X));
+		str.Append(") ");
+	}
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+#endif
 
 	routes = annealing();
 
 	done = true;
+
+#ifdef OUTPUT1
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Done")));
+#endif
+
+
+#ifdef OUTPUT
+	UE_LOG(LogTemp, Warning, TEXT("Final routes - Total cost: %f"), cost(routes));
+	for (int32 c = 0; c < agents.Num(); c++) {
+		AAgent * agent = agents[c];
+
+		TArray<FVector2D> route = routes.FindRef(agents[c]);
+
+		FString str;
+
+		str.Append("Agent (");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().Y));
+		str.Append(", ");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().X));
+		str.Append("): ");
+
+		for (int32 g = 0; g < route.Num()-1; g++) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[g].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[g].X));
+			str.Append(") -> ");
+		}
+
+		if (route.Num() != 0) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].X));
+			str.Append(")");
+		}
+
+		str.Append(". Cost: ");
+		str.Append(FString::SanitizeFloat(cost(agent, route)));
+
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+	}
+#endif
 }
 
 TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::getRoutes()
@@ -43,11 +104,17 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::annealing()
 	float currentCost = cost(currentSolution);
 	TMap<AAgent *, TArray<FVector2D>> bestSolution = solution;
 	float bestCost = currentCost;
-	float time = 0;
+	
+	float maxTime = 20;
+	time_t begin;
 
-	float maxTime = -1;	// WTF is this?!
+	time(&begin);
 
-	while (time > maxTime && temperature > 0.001) {
+	time_t current;
+
+	time(&current);
+
+	while (maxTime > difftime(current, begin) && temperature > 0.001) {
 		for (int32 c = 0; c < M0; c++) {
 			TMap<AAgent *, TArray<FVector2D>> newSolution = neighbour(currentSolution);
 			float newCost = cost(newSolution);
@@ -61,29 +128,57 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::annealing()
 					bestSolution = newSolution;
 					bestCost = newCost;
 				}
-			} else if (FMath::SRand() < FMath::Exp(-(deltaCost) / temperature)) {
+			}
+			else if (FMath::SRand() < FMath::Exp(-(deltaCost) / temperature)) {
 				currentSolution = newSolution;
 				currentCost = newCost;
 			}
 		}
 
-		time = time + M0;
+		//time = time + M0;
 
 		temperature *= alpha;
 
 		M0 *= beta;
+
+		time(&current);
 	}
 
 	return bestSolution;
 }
 
 /*
-* TODO: Check if this works
+* TODO: Check if this works + make it into the greedy algorithm
 */
 TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::initialConfiguration()
 {
 	TMap<AAgent *, TArray<FVector2D>> routes;
 
+	for (int32 c = 0; c < customers.Num(); c++) {
+		float closestDist = std::numeric_limits<float>::infinity();
+		AAgent * closestAgent = agents[0];
+
+		for (int32 g = 0; g < agents.Num(); g++) {
+			AAgent * agent = agents[g];
+
+			float dist = cost(to2D(agent->GetActorLocation()), customers[c]);
+
+			if (dist < closestDist) {
+				closestDist = dist;
+				closestAgent = agent;
+			}
+		}
+
+		TArray<FVector2D> route;
+		if (routes.Contains(closestAgent)) {
+			route = routes.FindRef(closestAgent);
+		}
+
+		route.Add(customers[c]);
+		routes.Emplace(closestAgent, route);
+	}
+
+	/*
 	float customerPerAgent = customers.Num() / agents.Num();
 
 	for (int32 c = 0; c < agents.Num(); c++) {
@@ -93,52 +188,161 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::initialConfiguration()
 		}
 
 		// TODO: Make sure so that every customer is apart of a route.
-		// And also so the same costumer is not part of multiple routes.
+		// And also so the same customer is not part of multiple routes.
 
 		routes.Emplace(agents[c], route);
 	}
-
+	*/
 	return routes;
 }
 
 TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::neighbour(TMap<AAgent *, TArray<FVector2D>> routes)
 {
-	routes = move(routes);
+#ifdef OUTPUT1
+	UE_LOG(LogTemp, Warning, TEXT("Neighbour 1"));
+	for (int32 c = 0; c < agents.Num(); c++) {
+		AAgent * agent = agents[c];
 
+		TArray<FVector2D> route = routes.FindRef(agents[c]);
+
+		FString str;
+
+		str.Append("Agent (");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().Y));
+		str.Append(", ");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().X));
+		str.Append("): ");
+
+		for (int32 g = 0; g < route.Num() - 1; g++) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[g].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[g].X));
+			str.Append(") -> ");
+		}
+
+		if (route.Num() != 0) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].X));
+			str.Append(")");
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+	}
+#endif
+	routes = move(routes);
+#ifdef OUTPUT1
+	UE_LOG(LogTemp, Warning, TEXT("Neighbour 2"));
+	for (int32 c = 0; c < agents.Num(); c++) {
+		AAgent * agent = agents[c];
+
+		TArray<FVector2D> route = routes.FindRef(agents[c]);
+
+		FString str;
+
+		str.Append("Agent (");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().Y));
+		str.Append(", ");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().X));
+		str.Append("): ");
+
+		for (int32 g = 0; g < route.Num() - 1; g++) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[g].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[g].X));
+			str.Append(") -> ");
+		}
+
+		if (route.Num() != 0) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].X));
+			str.Append(")");
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+	}
+#endif
 	routes = replaceHighestAverage(routes);
-	
+#ifdef OUTPUT1
+	UE_LOG(LogTemp, Warning, TEXT("Neighbour 3"));
+	for (int32 c = 0; c < agents.Num(); c++) {
+		AAgent * agent = agents[c];
+
+		TArray<FVector2D> route = routes.FindRef(agents[c]);
+
+		FString str;
+
+		str.Append("Agent (");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().Y));
+		str.Append(", ");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().X));
+		str.Append("): ");
+
+		for (int32 g = 0; g < route.Num() - 1; g++) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[g].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[g].X));
+			str.Append(") -> ");
+		}
+
+		if (route.Num() != 0) {
+			str.Append("(");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].Y));
+			str.Append(", ");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].X));
+			str.Append(")");
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+	}
+#endif
 	return routes;
 }
 
 TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::move(TMap<AAgent *, TArray<FVector2D>> routes)
 {
-	int32 const numberToChange = 5;
+	if (numberToChange * 2 >= customers.Num()) {
+		return routes;
+	}
 
-
-	// Find the five pair of costumers with shortest distance between them. 
-	TArray<TTuple<float, AAgent *, int32, int32>> shortestDistance;
+	// Find the five pair of customers with shortest distance between them. 
+	TArray<TTuple<float, AAgent *, FVector2D, FVector2D, bool>> shortestDistance;
 
 	for (int32 c = 0; c < agents.Num(); c++) {
 		TArray<FVector2D> route = routes.FindRef(agents[c]);
 
-		float dist = cost(to2D(agents[c]->GetActorLocation()), route[0]);
+		if (route.Num() == 0) {
+			continue;
+		}
 
 		AAgent * agent = agents[c];
-		int32 index1 = -1;
-		int32 index2 = 0;
 
+		float dist = cost(to2D(agent->GetActorLocation()), route[0]);
+		
+		FVector2D location1 = to2D(agent->GetActorLocation());
+		FVector2D location2 = route[0];
+
+		
+		bool haveAgent = true;
 		if (shortestDistance.Num() < numberToChange) {
-			shortestDistance.Emplace(dist, agent, index1, index2);
+			shortestDistance.Emplace(dist, agent, location1, location2, haveAgent);
 		} else {
 			for (int32 i = 0; i < numberToChange; i++) {
 				if (dist < shortestDistance[i].Get<0>()) {
 					auto temp = shortestDistance[i];
-					shortestDistance[i] = TTuple<float, AAgent *, int32, int32>(dist, agent, index1, index2);
+					shortestDistance[i] = TTuple<float, AAgent *, FVector2D, FVector2D, bool>(dist, agent, location1, location2, haveAgent);
 
 					dist = temp.Get<0>();
 					agent = temp.Get<1>();
-					index1 = temp.Get<2>();
-					index2 = temp.Get<3>();
+					location1 = temp.Get<2>();
+					location2 = temp.Get<3>();
+					haveAgent = temp.Get<4>();
 				}
 			}
 		}
@@ -147,48 +351,50 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::move(TMap<AAgent *, TArra
 			dist = cost(route[g - 1], route[g]);
 
 			agent = agents[c];
-			index1 = g - 1;
-			index2 = g;
+			location1 = route[g - 1];
+			location2 = route[g];
+
+			haveAgent = false;
 
 			if (shortestDistance.Num() < numberToChange) {
-				shortestDistance.Emplace(dist, agent, index1, index2);
+				shortestDistance.Emplace(dist, agent, location1, location2, haveAgent);
 			}
 			else {
 				for (int32 i = 0; i < numberToChange; i++) {
 					if (dist < shortestDistance[i].Get<0>()) {
 						auto temp = shortestDistance[i];
-						shortestDistance[i] = TTuple<float, AAgent *, int32, int32>(dist, agent, index1, index2);
+						shortestDistance[i] = TTuple<float, AAgent *, FVector2D, FVector2D, bool>(dist, agent, location1, location2, haveAgent);
 
 						dist = temp.Get<0>();
 						agent = temp.Get<1>();
-						index1 = temp.Get<2>();
-						index2 = temp.Get<3>();
+						location1 = temp.Get<2>();
+						location2 = temp.Get<3>();
+						haveAgent = temp.Get<4>();
 					}
 				}
 			}
 		}
 	}
 
+	// Select five random customers that exclude the agent and the customer at "index2".
+	TArray<FVector2D> randomcustomers;
 
-	// Select five random costumers that exclude the agent and the costumer at "index2".
-	TArray<FVector2D> randomCostumers;
+	TArray<FVector2D> pickFrom = customers;
 
-	while (randomCostumers.Num() < numberToChange) {
-		int32 agentIndex = FMath::RandRange(0, agents.Num() - 1);
+	while (randomcustomers.Num() < numberToChange) {
+		int32 customerIndex = FMath::RandRange(0, pickFrom.Num() - 1);		// TODO: make better, fix a list of only the available.
 
-		AAgent * agent = agents[agentIndex];
+		FVector2D customer = pickFrom[customerIndex];
 
-		TArray<FVector2D> route = routes.FindRef(agent);
-
-		int32 costumerIndex = FMath::RandRange(0, route.Num() - 1);
+		pickFrom.RemoveAt(customerIndex);
 
 		// Check if this is a valid choice.
 		bool valid = true;
 		for (int32 i = 0; i < shortestDistance.Num(); i++) {
 			auto pair = shortestDistance[i];
 
-			if (pair.Get<1>() == agent) {	// TODO: should check what they are pointing to?
-				if (pair.Get<3>() == costumerIndex) {
+			if (!pair.Get<4>()) {	// Can not move an agent.
+				if (pair.Get<3>().Equals(customer, 0)) {
 					valid = false;
 					break;
 				}
@@ -196,25 +402,32 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::move(TMap<AAgent *, TArra
 		}
 
 		if (valid) {
-			randomCostumers.Add(route[costumerIndex]);
-		}
+			randomcustomers.Add(customer);
+		
+			// Remove from route.
+			for (int32 c = 0; c < agents.Num(); c++) {
+				TArray<FVector2D> route = routes.FindRef(agents[c]);
 
-		// Remove from route.
-		route.RemoveAt(costumerIndex);
-		routes.Emplace(agent, route);
+				if (route.Contains(customer)) {
+					route.Remove(customer);
+					routes.Emplace(agents[c], route);
+					break;
+				}
+			}
+		}
 	}
-	
-	// Insert the random costumers to random routes.
-	for (int32 c = 0; c < randomCostumers.Num(); c++) {
+
+	// Insert the random customers to random routes.
+	for (int32 c = 0; c < randomcustomers.Num(); c++) {
 		int32 agentIndex = FMath::RandRange(0, agents.Num() - 1);
 
 		AAgent * agent = agents[agentIndex];
 
 		TArray<FVector2D> route = routes.FindRef(agent);
 
-		FVector2D costumer = randomCostumers[c];
+		FVector2D customer = randomcustomers[c];
 
-		route = addToRoute(agent, route, costumer);
+		route = addToRoute(agent, route, customer);
 
 		routes.Emplace(agent, route);
 	}
@@ -223,42 +436,28 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::move(TMap<AAgent *, TArra
 	return routes;
 }
 
-TArray<FVector2D> ASimulatedAnnealing::addToRoute(AAgent * agent, TArray<FVector2D> route, FVector2D costumer)
+TArray<FVector2D> ASimulatedAnnealing::addToRoute(AAgent * agent, TArray<FVector2D> route, FVector2D customer)
 {
-	route.Insert(to2D(agent->GetActorLocation()), 0);
+	if (route.Num() == 0) {
+		route.Add(to2D(agent->GetActorLocation()));
+	} else {
+		route.Insert(to2D(agent->GetActorLocation()), 0);
+	}
 
-	addToRoute(route, costumer);
+	route = addToRoute(route, customer);
 
 	route.RemoveAt(0);
 
 	return route;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-* TODO
-*/
 TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::replaceHighestAverage(TMap<AAgent *, TArray<FVector2D>> routes)
 {
-	int32 const numberToChange = 5;
+	if (numberToChange * 2 >= customers.Num()) {
+		return routes;
+	}
 
-	TArray<TTuple<float, FVector2D, AAgent *, int32>> highestAverage;
+	TArray<TTuple<float, FVector2D, AAgent *>> highestAverage;
 
 
 	// Find the five vertices with highest average distance to neighbours.
@@ -276,8 +475,9 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::replaceHighestAverage(TMa
 			}
 
 			if (highestAverage.Num() < numberToChange) {
-				highestAverage.Emplace(distance, route[g], agents[c], g-1);
-			} else {
+				highestAverage.Emplace(distance, route[g], agents[c]);
+			}
+			else {
 				float lowest = std::numeric_limits<float>::infinity();
 				int32 index = 0;
 				for (int32 i = 0; i < highestAverage.Num(); i++) {
@@ -288,11 +488,17 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::replaceHighestAverage(TMa
 				}
 
 				if (lowest < distance) {
-					highestAverage[index] = TTuple<float, FVector2D, AAgent *, int32>(distance, route[g], agents[c], g-1);
+					highestAverage[index] = TTuple<float, FVector2D, AAgent *>(distance, route[g], agents[c]);
 				}
 			}
 		}
+
+		route.RemoveAt(0);
 	}
+
+#ifdef OUTPUT1
+	UE_LOG(LogTemp, Warning, TEXT("Found closest"));
+#endif
 
 	TArray<FVector2D> removed;
 
@@ -300,18 +506,20 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::replaceHighestAverage(TMa
 	for (int32 c = 0; c < highestAverage.Num(); c++) {
 		AAgent * agent = highestAverage[c].Get<2>();
 
-		int32 index = highestAverage[c].Get<3>();
-
 		TArray<FVector2D> route = routes.FindRef(agent);
 
-		route.RemoveAt(index);
-
 		FVector2D location = highestAverage[c].Get<1>();
+
+		route.Remove(location);
 
 		removed.Add(location);
 
 		routes.Emplace(agent, route);
 	}
+
+#ifdef OUTPUT1
+	UE_LOG(LogTemp, Warning, TEXT("Removed closest"));
+#endif
 
 	// Get five random agents.
 	TArray<AAgent *> randomAgents;
@@ -322,56 +530,60 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::replaceHighestAverage(TMa
 		randomAgents.Add(agents[randNum]);
 	}
 
-	// Insert the five removed costumers into the five random selected agents.
+#ifdef OUTPUT1
+	UE_LOG(LogTemp, Warning, TEXT("Got random agents"));
+#endif
+
+	// Insert the five removed customers into the five random selected agents.
 	// In a way that minimizing the cost.
 	return insertBest(routes, removed, randomAgents);
-	
+
 	/*
 	for (int32 c = 0; c < removed.Num(); c++) {
-		AAgent * agent = best.FindRef(removed[c]);
+	AAgent * agent = best.FindRef(removed[c]);
 
-		TArray<FVector2D> route = routes.FindRef(agent);
+	TArray<FVector2D> route = routes.FindRef(agent);
 
-		route.Insert(to2D(agent->GetActorLocation()), 0);
+	route.Insert(to2D(agent->GetActorLocation()), 0);
 
-		route = addToRoute(route, removed[c]);
+	route = addToRoute(route, removed[c]);
 
-		route.RemoveAt(0);
+	route.RemoveAt(0);
 
-		routes.Emplace(agent, route);
+	routes.Emplace(agent, route);
 	}
 
 	return routes;
 	*/
 }
 
-TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::insertBest(TMap<AAgent *, TArray<FVector2D>> routes, TArray<FVector2D> costumers, TArray<AAgent *> agents)
+TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::insertBest(TMap<AAgent *, TArray<FVector2D>> routes, TArray<FVector2D> customers, TArray<AAgent *> agents)
 {
-	if (costumers.Num() == 0) {
+	if (customers.Num() == 0) {
 		return routes;
 	}
 
 	TMap<AAgent *, TArray<FVector2D>> bestRoutes;
 	float bestCost = std::numeric_limits<float>::infinity();
 
-	for (int32 c = 0; c < costumers.Num(); c++) {
-		FVector2D costumer = costumers[c];
+	for (int32 c = 0; c < customers.Num(); c++) {
+		FVector2D customer = customers[c];
 
-		costumers.RemoveAt(c);
+		customers.RemoveAt(c);
 
 		for (int32 g = 0; g < agents.Num(); g++) {
 			AAgent * agent = agents[g];
 
 			TArray<FVector2D> route = routes.FindRef(agent);
 
-			TArray<FVector2D> newRoute = addToRoute(agent, route, costumer);
+			TArray<FVector2D> newRoute = addToRoute(agent, route, customer);
 
 			agents.RemoveAt(g);
 
 			routes.Emplace(agent, newRoute);
 
-			TMap<AAgent *, TArray<FVector2D>> newRoutes = insertBest(routes, costumers, agents);
-		
+			TMap<AAgent *, TArray<FVector2D>> newRoutes = insertBest(routes, customers, agents);
+
 			float newCost = cost(newRoutes);
 
 			if (newCost < bestCost) {
@@ -384,19 +596,19 @@ TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::insertBest(TMap<AAgent *,
 			agents.Insert(agent, g);
 		}
 
-		costumers.Insert(costumer, c);
+		customers.Insert(customer, c);
 	}
 
 	return bestRoutes;
 }
 
 
-float ASimulatedAnnealing::ifAddedCost(TArray<FVector2D> route, FVector2D costumer)
+float ASimulatedAnnealing::ifAddedCost(TArray<FVector2D> route, FVector2D customer)
 {
 	float lowestCost = std::numeric_limits<float>::infinity();
 
 	for (int32 c = 1; c < route.Num(); c++) {
-		route.Insert(costumer, c);
+		route.Insert(customer, c);
 
 		float newCost = cost(route);
 
@@ -412,15 +624,15 @@ float ASimulatedAnnealing::ifAddedCost(TArray<FVector2D> route, FVector2D costum
 }
 
 /*
-* Insert costumer into the optimal index of the route.
+* Insert customer into the optimal index of the route.
 */
-TArray<FVector2D> ASimulatedAnnealing::addToRoute(TArray<FVector2D> route, FVector2D costumer)
+TArray<FVector2D> ASimulatedAnnealing::addToRoute(TArray<FVector2D> route, FVector2D customer)
 {
 	float lowestCost = std::numeric_limits<float>::infinity();
 	int32 index = 1;
 
 	for (int32 c = 1; c < route.Num(); c++) {
-		route.Insert(costumer, c);
+		route.Insert(customer, c);
 
 		float newCost = cost(route);
 
@@ -431,9 +643,18 @@ TArray<FVector2D> ASimulatedAnnealing::addToRoute(TArray<FVector2D> route, FVect
 
 		route.RemoveAt(c);
 	}
-	
-	route.Insert(costumer, index);
-	
+
+	route.Add(customer);
+	float newCost = cost(route);
+
+	if (newCost < lowestCost) {
+		return route;
+	} else {
+		route.Remove(customer);
+	}
+
+	route.Insert(customer, index);
+
 	return route;
 }
 
@@ -456,21 +677,45 @@ float ASimulatedAnnealing::cost(TArray<FVector2D> route) const
 	return totalCost;
 }
 
+float ASimulatedAnnealing::cost(AAgent * agent, TArray<FVector2D> route) const
+{
+	float totalCost = 0;
+
+	if (route.Num() > 0) {
+		totalCost += cost(to2D(agent->GetActorLocation()), route[0]);
+	}
+
+	totalCost += cost(route);
+
+	return totalCost;
+}
+
 /*
 * Returns the total cost of all routes.
 */
 float ASimulatedAnnealing::cost(TMap<AAgent *, TArray<FVector2D>> routes) const
 {
+	float longestRoute = 0;
 	float totalCost = 0;
 	for (int32 c = 0; c < agents.Num(); c++) {
 		TArray<FVector2D> route = routes.FindRef(agents[c]);
 
-		totalCost += cost(to2D(agents[c]->GetActorLocation()), route[0]);
+		if (route.Num() == 0) {
+			continue;
+		}
 
-		totalCost += cost(route);
+		float routeCost = cost(to2D(agents[c]->GetActorLocation()), route[0]);
+
+		routeCost += cost(route);
+
+		totalCost += routeCost;
+
+		if (routeCost > longestRoute) {
+			longestRoute = routeCost;
+		}
 	}
 
-	return totalCost;
+	return longestRoute;
 }
 
 FVector2D ASimulatedAnnealing::to2D(FVector vector) const
@@ -488,29 +733,29 @@ FVector2D ASimulatedAnnealing::to2D(FVector vector) const
 
 
 /*
-TMap<AAgent *, FVector2D> ASimulatedAnnealing::insertBest_help(TMap<AAgent *, TArray<FVector2D>> routes, TArray<FVector2D> costumers, TArray<AAgent *> agents, TMap<AAgent *, FVector2D> & assignment)
+TMap<AAgent *, FVector2D> ASimulatedAnnealing::insertBest_help(TMap<AAgent *, TArray<FVector2D>> routes, TArray<FVector2D> customers, TArray<AAgent *> agents, TMap<AAgent *, FVector2D> & assignment)
 {
-if (costumers.Num() == 0) {
+if (customers.Num() == 0) {
 return assignment;
 }
 
 float bestCost = std::numeric_limits<float>::infinity();
 TMap<AAgent *, FVector2D> bestAssignment;
 
-for (int32 c = 0; c < costumers.Num(); c++) {
-FVector2D costumer = costumers[c];
+for (int32 c = 0; c < customers.Num(); c++) {
+FVector2D customer = customers[c];
 
 TMap<AAgent *, FVector2D> copyAssignment = assignment;
 
-costumers.RemoveAt(c);
+customers.RemoveAt(c);
 for (int32 g = 0; g < agents.Num(); g++) {
 AAgent * agent = agents[g];
 
 agents.RemoveAt(g);
 
-copyAssignment.Emplace(agent, costumer);
+copyAssignment.Emplace(agent, customer);
 
-TMap<AAgent *, FVector2D> currentAssignment = insertBest_help(costumers, agents, copyAssignment);
+TMap<AAgent *, FVector2D> currentAssignment = insertBest_help(customers, agents, copyAssignment);
 
 float cost = cost(currentAssignment);
 
@@ -524,7 +769,7 @@ copyAssignment.Remove(agent);
 agents.Insert(agent, g);
 }
 
-costumers.Insert(costumer, c);
+customers.Insert(customer, c);
 }
 }
 */

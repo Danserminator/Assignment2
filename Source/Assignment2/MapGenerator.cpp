@@ -84,6 +84,31 @@ void AMapGenerator::generateFormation(float d, TArray<FVector2D> & positions)
 	}
 }
 
+void AMapGenerator::generateCustomers(TArray<FVector2D> & customers)
+{
+	// Get Agent blueprint
+	auto cls = StaticLoadObject(UObject::StaticClass(), nullptr,
+		TEXT("Blueprint'/Game/TopDownCPP/Blueprints/Customer.Customer'"));
+	UBlueprint * bp = Cast<UBlueprint>(cls);
+	TSubclassOf<class UObject> customerBP = (UClass*)bp->GeneratedClass;
+
+	// Read positions of customers
+	TArray<TArray<float>> locations = readData(customersFile);
+
+	// Spawn customers
+	for (int32 c = 0; c < locations.Num(); c++) {
+		FVector location = FVector(gridToLocation(locations[c][0], locations[c][1]), 0);
+
+		GWorld->GetWorld()->SpawnActor<ACustomer>(customerBP, location, FRotator(0, 0, 0));
+
+		customers.Add(FVector2D(location.X, location.Y));
+
+#ifdef OUTPUT
+		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%f, %f}\r\n"), c, agents[c]->GetActorLocation().X, agents[c]->GetActorLocation().Y));
+#endif
+	}
+}
+
 TArray<TArray<float>> AMapGenerator::readData(const FString fileName)
 {
 	TArray<FString> strArray;
@@ -149,5 +174,5 @@ FVector2D AMapGenerator::gridToLocation(float X, float Y) {
 }
 
 FVector2D AMapGenerator::gridToLocation(FVector2D vector) {
-	return gridToLocation(vector.Y, vector.X);
+	return gridToLocation(vector.X, vector.Y);
 }
