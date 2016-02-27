@@ -3,20 +3,20 @@
 #pragma once
 
 #include "Agent.h"
+#include "GameFramework/Pawn.h"
 #include "VisibilityGraph.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class ASSIGNMENT2_API UVisibilityGraph : public UObject
+class ASSIGNMENT2_API AVisibilityGraph : public APawn
 {
 	GENERATED_BODY()
-
+	
 private:
 	TMultiMap<FVector2D, FVector2D> graph;
 
 	TArray<TArray<FVector2D>> obstacles;
+
+	TArray<FVector2D> vertices;
 
 	TMap<FVector2D, FVector2D> verticesToOriginal;
 
@@ -24,16 +24,18 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "VisibilityGraph")
-	void generateGraph(TArray<FVector> * corners, TArray<AAgent *> * agents, TArray<FVector2D> * customers, VisibilityGraph & graph);
+	void generateGraph(TArray<FVector> corners, TArray<AAgent *> agents, TArray<FVector2D> customers);
 
 	TMultiMap<FVector2D, FVector2D> getGraph();
 
-private:
-	void makeObstacles(TArray<FVector> * corners);
-
-	TArray<TArray<FVector2D>> getEdges(TArray<FVector> * map);
-
 	TArray<FVector2D> getVertices();
+
+private:
+	void makeObstacles(TArray<FVector> corners);
+
+	TArray<TArray<FVector2D>> getEdges(TArray<FVector> map);
+
+	TArray<FVector2D> createVertices();
 
 	FVector2D makeBufferPoint(int32 obstacle, FVector2D p0, FVector2D p1, FVector2D p2);
 
@@ -46,4 +48,5 @@ private:
 	bool intersect(FVector2D point1, FVector2D point2, FVector2D point3, FVector2D point4);
 
 	void add(FVector2D start, FVector2D end);
+	
 };

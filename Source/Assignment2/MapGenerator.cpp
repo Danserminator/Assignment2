@@ -19,14 +19,9 @@ void AMapGenerator::generateObstacles(TArray<FVector> & corners)
 
 	// Group vertices into obstacles
 	FVector vertice;
-	float obstacle = 0;
 	for (int32 c = 0; c < obstacleCorners.Num(); c++) {
-		vertice = FVector(gridToLocation(obstacleCorners[c][0], obstacleCorners[c][1]), obstacle);
+		vertice = FVector(gridToLocation(obstacleCorners[c][0], obstacleCorners[c][1]), obstacleCorners[c][2]);
 		corners.Add(vertice);
-
-		if (obstacleCorners[c][2] == 3) {
-			obstacle++;
-		}
 	}
 
 	// Generate blocks with edges

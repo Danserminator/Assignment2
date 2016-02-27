@@ -7,6 +7,8 @@
 #include <limits>
 #include <ctime>
 #include "Settings.h"
+#include "VisibilityGraph.h"
+#include "AStar.h"
 #include "SimulatedAnnealing.generated.h"
 
 /**
@@ -38,6 +40,7 @@ private:
 
 	TArray<FVector2D> customers;
 	TArray<AAgent *> agents;
+	AVisibilityGraph * graph;
 
 	TMap<AAgent *, TArray<FVector2D>> routes;
 
@@ -48,7 +51,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Simulated Annealing")
-		void simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> inputCustomers,
+		void simulatedAnnealing(AVisibilityGraph * graph, TArray<AAgent *> agents, TArray<FVector2D> inputCustomers,
 			float temperature, float alpha, float beta, float M0, float maxTime);
 
 	TMap<AAgent *, TArray<FVector2D>> getRoutes();

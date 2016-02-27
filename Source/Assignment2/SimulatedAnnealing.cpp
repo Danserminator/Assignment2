@@ -5,9 +5,10 @@
 
 #define OUTPUT
 
-void ASimulatedAnnealing::simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> inputCustomers,
+void ASimulatedAnnealing::simulatedAnnealing(AVisibilityGraph * graph, TArray<AAgent *> agents, TArray<FVector2D> inputCustomers,
 	float temperature, float alpha, float beta, float M0, float maxTime)
 {
+	this->graph = graph;
 	this->temperature = temperature;
 	this->alpha = alpha;	// Temperature reduction multiplier
 	this->beta = beta;	// Iteration multiplier
@@ -666,8 +667,14 @@ TArray<FVector2D> ASimulatedAnnealing::addToRoute(TArray<FVector2D> route, FVect
 */
 float ASimulatedAnnealing::cost(FVector2D start, FVector2D stop) const
 {
-	// TODO: obstacle avoidens (visibility graph + A*).
-	return FVector2D::Distance(start, stop);
+	TArray<FVector2D> path = AStar::getPath(graph->getGraph(), graph->getVertices(), start, stop);
+
+	float dist = 0;
+	for (int32 c = 1; c < path.Num(); c++) {
+		dist += FVector2D::Distance(path[c - 1], path[c]);
+	}
+
+	return dist;
 }
 
 float ASimulatedAnnealing::cost(TArray<FVector2D> route) const

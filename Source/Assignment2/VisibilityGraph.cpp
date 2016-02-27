@@ -5,53 +5,56 @@
 
 //#define OUTPUT
 
-void UVisibilityGraph::generateGraph(TArray<FVector> * corners, TArray<AAgent*> * agents, TArray<FVector2D> * customers, VisibilityGraph & visibilityGraph)
+void AVisibilityGraph::generateGraph(TArray<FVector> corners, TArray<AAgent*> agents, TArray<FVector2D> customers)
 {
 	makeObstacles(corners);
 
 	TArray<TArray<FVector2D>> edges = getEdges(corners);
 
-	TArray<FVector2D> vertices = getVertices();
+	vertices = createVertices();
 
 	// Add actor locations to visibility graph
 	FVector aLoc;
-	for (int32 c = 0; c < agents->Num(); c++) {
-		aLoc = (*agents)[c]->GetActorLocation();
+	for (int32 c = 0; c < agents.Num(); c++) {
+		aLoc = agents[c]->GetActorLocation();
 		vertices.Add(FVector2D(aLoc.X, aLoc.Y));
 	}
 
 	// Add customer locations to visibility graph
-	for (int32 c = 0; c < customers->Num(); c++) {
-		vertices.Add((*customers)[c]);
+	for (int32 c = 0; c < customers.Num(); c++) {
+		vertices.Add(customers[c]);
 	}
 
 	makeGraph(edges, vertices);
-
-	visibilityGraph = *this;
 }
 
-TMultiMap<FVector2D, FVector2D> UVisibilityGraph::getGraph()
+TMultiMap<FVector2D, FVector2D> AVisibilityGraph::getGraph()
 {
 	return graph;
 }
 
-void UVisibilityGraph::makeObstacles(TArray<FVector> * corners)
+TArray<FVector2D> AVisibilityGraph::getVertices()
+{
+	return vertices;
+}
+
+void AVisibilityGraph::makeObstacles(TArray<FVector> corners)
 {
 	FVector2D vertice;
 	bool obstDone = false;
 	TArray<FVector2D> obstacle;
-	for (int32 c = 0; c < corners->Num(); c++) {
+	for (int32 c = 0; c < corners.Num(); c++) {
 		if (obstDone) {
 			obstDone = false;
 			obstacles.Add(obstacle);
 			obstacle.Empty();
 		}
 
-		vertice = FVector2D((*corners)[c].X, (*corners)[c].Y);
+		vertice = FVector2D(corners[c].X, corners[c].Y);
 
 		obstacle.Add(vertice);
 
-		if ((*corners)[c].Y == 3) {
+		if (corners[c].Y == 3) {
 			obstDone = true;
 		}
 	}
@@ -61,7 +64,7 @@ void UVisibilityGraph::makeObstacles(TArray<FVector> * corners)
 	}
 }
 
-TArray<TArray<FVector2D>> UVisibilityGraph::getEdges(TArray<FVector> * map)
+TArray<TArray<FVector2D>> AVisibilityGraph::getEdges(TArray<FVector> map)
 {
 	TArray<TArray<FVector2D>> edges;
 
@@ -69,16 +72,16 @@ TArray<TArray<FVector2D>> UVisibilityGraph::getEdges(TArray<FVector> * map)
 	FVector2D startLine;
 	FVector2D endLine;
 	bool newObst = true;
-	for (int32 c = 0; c < map->Num(); c++) {
+	for (int32 c = 0; c < map.Num(); c++) {
 		if (newObst) {
 			newObst = false;
-			init = FVector2D((*map)[c].X, (*map)[c].Y);
-			startLine = FVector2D((*map)[c].X, (*map)[c].Y);
-			endLine = FVector2D((*map)[c + 1].X, (*map)[c + 1].Y);
+			init = FVector2D(map[c].X, map[c].Y);
+			startLine = FVector2D(map[c].X, map[c].Y);
+			endLine = FVector2D(map[c + 1].X, map[c + 1].Y);
 		} else {
 			startLine = endLine;
-			if ((*map)[c].Z == 1) {
-				endLine = FVector2D((*map)[c + 1].X, (*map)[c + 1].Y);
+			if (map[c].Z == 1) {
+				endLine = FVector2D(map[c + 1].X, map[c + 1].Y);
 			} else {
 				newObst = true;
 				endLine = init;
@@ -94,7 +97,7 @@ TArray<TArray<FVector2D>> UVisibilityGraph::getEdges(TArray<FVector> * map)
 	return edges;
 }
 
-TArray<FVector2D> UVisibilityGraph::getVertices()
+TArray<FVector2D> AVisibilityGraph::createVertices()
 {
 	TArray<FVector2D> vertices;
 
@@ -124,7 +127,7 @@ TArray<FVector2D> UVisibilityGraph::getVertices()
 	return vertices;
 }
 
-FVector2D UVisibilityGraph::makeBufferPoint(int32 obstacle, FVector2D p0, FVector2D p1, FVector2D p2)
+FVector2D AVisibilityGraph::makeBufferPoint(int32 obstacle, FVector2D p0, FVector2D p1, FVector2D p2)
 {
 	FVector2D line1 = p1 - p0;
 	FVector2D line2 = p1 - p2;
@@ -144,7 +147,7 @@ FVector2D UVisibilityGraph::makeBufferPoint(int32 obstacle, FVector2D p0, FVecto
 	}
 }
 
-bool UVisibilityGraph::insidePoly(TArray<FVector2D> poly, FVector2D point)
+bool AVisibilityGraph::insidePoly(TArray<FVector2D> poly, FVector2D point)
 {
 	bool insidePoly = false;
 	for (int32 c = 0, g = poly.Num() - 1; c < poly.Num(); g = c++) {
@@ -157,7 +160,7 @@ bool UVisibilityGraph::insidePoly(TArray<FVector2D> poly, FVector2D point)
 	return insidePoly;
 }
 
-void UVisibilityGraph::makeGraph(TArray<TArray<FVector2D>> edges, TArray<FVector2D> vertices) {
+void AVisibilityGraph::makeGraph(TArray<TArray<FVector2D>> edges, TArray<FVector2D> vertices) {
 	for (int32 c = 0; c < vertices.Num(); c++) {
 		for (int32 g = 0; g < vertices.Num(); g++) {
 			if (c == g) continue;
@@ -191,7 +194,7 @@ void UVisibilityGraph::makeGraph(TArray<TArray<FVector2D>> edges, TArray<FVector
 	#endif
 }
 
-bool UVisibilityGraph::canSee(FVector2D start, FVector2D end, TArray<TArray<FVector2D>> & edges)
+bool AVisibilityGraph::canSee(FVector2D start, FVector2D end, TArray<TArray<FVector2D>> & edges)
 {
 	/*
 	for (int32 c = 0; c < edges.Num(); c++) {
@@ -227,7 +230,7 @@ bool UVisibilityGraph::canSee(FVector2D start, FVector2D end, TArray<TArray<FVec
 	return true;
 }
 
-bool UVisibilityGraph::intersect(FVector2D point1, FVector2D point2, FVector2D point3, FVector2D point4)
+bool AVisibilityGraph::intersect(FVector2D point1, FVector2D point2, FVector2D point3, FVector2D point4)
 {
 	FVector2D direction1 = point2 - point1;
 	FVector2D direction2 = point4 - point3;
@@ -248,7 +251,7 @@ bool UVisibilityGraph::intersect(FVector2D point1, FVector2D point2, FVector2D p
 	return false;
 }
 
-void UVisibilityGraph::add(FVector2D start, FVector2D end)
+void AVisibilityGraph::add(FVector2D start, FVector2D end)
 {
 	graph.Add(start, end);
 }
