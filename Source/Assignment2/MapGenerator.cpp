@@ -5,7 +5,7 @@
 
 //#define OUTPUT
 
-void AMapGenerator::generateObstacles()
+void AMapGenerator::generateObstacles(TArray<FVector> & corners)
 {
 	// Get MazeBlock blueprint
 	auto cls = StaticLoadObject(UObject::StaticClass(), nullptr,
@@ -14,8 +14,20 @@ void AMapGenerator::generateObstacles()
 	TSubclassOf<class UObject> blockBP = (UClass*)bp->GeneratedClass;
 
 	// Read obstacles file and generate edges
-	TArray<TArray<float>> obstacles = readData(obstacleFile);
-	edges = getEdges(obstacles);
+	TArray<TArray<float>> obstacleCorners = readData(obstacleFile);
+	edges = getEdges(obstacleCorners);
+
+	// Group vertices into obstacles
+	FVector vertice;
+	float obstacle = 0;
+	for (int32 c = 0; c < obstacleCorners.Num(); c++) {
+		vertice = FVector(gridToLocation(obstacleCorners[c][0], obstacleCorners[c][1]), obstacle);
+		corners.Add(vertice);
+
+		if (obstacleCorners[c][2] == 3) {
+			obstacle++;
+		}
+	}
 
 	// Generate blocks with edges
 	for (int32 c = 0; c < edges.Num(); c++) {

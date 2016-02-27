@@ -106,6 +106,7 @@ void AModelController::adjustTarget(FVector2D formationVelocity)
 
 FVector2D AModelController::getBrakeTarget()
 {
+	stopped = true;
 	return to2D(agent->GetActorLocation());
 }
 
