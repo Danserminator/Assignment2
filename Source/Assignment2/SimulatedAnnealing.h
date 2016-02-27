@@ -6,6 +6,7 @@
 #include "Agent.h"
 #include <limits>
 #include <ctime>
+#include "Settings.h"
 #include "SimulatedAnnealing.generated.h"
 
 /**
@@ -29,6 +30,12 @@ private:
 	TArray<Node> r;
 	*/
 
+	float temperature = 5000;
+	float alpha = 0.85;	// Temperature reduction multiplier
+	float beta = 1.05;	// Iteration multiplier
+	float M0 = 5;		// Time until next parameter update
+	float maxTime = 20;
+
 	TArray<FVector2D> customers;
 	TArray<AAgent *> agents;
 
@@ -41,7 +48,8 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Simulated Annealing")
-		void simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> customers);
+		void simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> inputCustomers,
+			float temperature, float alpha, float beta, float M0, float maxTime);
 
 	TMap<AAgent *, TArray<FVector2D>> getRoutes();
 

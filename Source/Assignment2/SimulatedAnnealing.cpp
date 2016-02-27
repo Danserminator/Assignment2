@@ -5,8 +5,15 @@
 
 #define OUTPUT
 
-void ASimulatedAnnealing::simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> inputCustomers)
+void ASimulatedAnnealing::simulatedAnnealing(TArray<AAgent *> agents, TArray<FVector2D> inputCustomers,
+	float temperature, float alpha, float beta, float M0, float maxTime)
 {
+	this->temperature = temperature;
+	this->alpha = alpha;	// Temperature reduction multiplier
+	this->beta = beta;	// Iteration multiplier
+	this->M0 = M0;		// Time until next parameter update
+	this->maxTime = maxTime;
+
 #ifdef OUTPUT1
 	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej")));
 #endif
@@ -96,16 +103,11 @@ TArray<FVector2D> ASimulatedAnnealing::getRoute(AAgent * agent)
 TMap<AAgent *, TArray<FVector2D>> ASimulatedAnnealing::annealing()
 {
 	TMap<AAgent *, TArray<FVector2D>> solution = initialConfiguration();	// Initial solution
-	float alpha = 0.99;	// Temperature reduction multiplier
-	float beta = 1.05;	// Iteration multiplier
-	float M0 = 5;		// Time until next parameter update
-	float temperature = 5000;
 	TMap<AAgent *, TArray<FVector2D>> currentSolution = solution;
 	float currentCost = cost(currentSolution);
 	TMap<AAgent *, TArray<FVector2D>> bestSolution = solution;
 	float bestCost = currentCost;
 	
-	float maxTime = 20;
 	time_t begin;
 
 	time(&begin);

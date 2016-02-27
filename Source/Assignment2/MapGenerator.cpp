@@ -15,7 +15,7 @@ void AMapGenerator::generateObstacles()
 
 	// Read obstacles file and generate edges
 	TArray<TArray<float>> obstacles = readData(obstacleFile);
-	TArray<TArray<FVector2D>> edges = getEdges(obstacles);
+	edges = getEdges(obstacles);
 
 	// Generate blocks with edges
 	for (int32 c = 0; c < edges.Num(); c++) {
@@ -51,6 +51,8 @@ void AMapGenerator::generateAgents(float r, AFormation * formation, TArray<AAgen
 	for (int32 c = 0; c < locations.Num(); c++) {
 		FVector location = FVector(gridToLocation(locations[c][0], locations[c][1]), 0);
 		AAgent * agent = GWorld->GetWorld()->SpawnActor<AAgent>(agentBP, location, { 0,0,0 });
+
+		agentsPositions.Add(FVector2D(locations[c][0], locations[c][1]));
 
 		agents.Add(agent);
 
@@ -101,7 +103,9 @@ void AMapGenerator::generateCustomers(TArray<FVector2D> & customers)
 
 		GWorld->GetWorld()->SpawnActor<ACustomer>(customerBP, location, FRotator(0, 0, 0));
 
-		customers.Add(FVector2D(location.X, location.Y));
+		customers.Add(FVector2D(locations[c][0], locations[c][1]));
+
+		customersPositions.Add(FVector2D(locations[c][0], locations[c][1]));
 
 #ifdef OUTPUT
 		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%f, %f}\r\n"), c, agents[c]->GetActorLocation().X, agents[c]->GetActorLocation().Y));

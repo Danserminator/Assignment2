@@ -8,6 +8,7 @@
 #include "Customer.h"
 #include "Formation.h"
 #include <iostream>
+#include "Settings.h"
 #include "MapGenerator.generated.h"
 
 /**
