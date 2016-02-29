@@ -48,5 +48,7 @@ private:
 	bool intersect(FVector2D point1, FVector2D point2, FVector2D point3, FVector2D point4);
 
 	void add(FVector2D start, FVector2D end);
+
+	void writeGraphToFile(const FString fileName);
 	
 };

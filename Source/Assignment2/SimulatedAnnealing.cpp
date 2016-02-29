@@ -45,6 +45,7 @@ void ASimulatedAnnealing::simulatedAnnealing(AVisibilityGraph * graph, TArray<AA
 
 
 #ifdef OUTPUT
+	writeRoutesToFile("Routes.txt");
 	UE_LOG(LogTemp, Warning, TEXT("Final routes - Total cost: %f"), cost(routes));
 	for (int32 c = 0; c < agents.Num(); c++) {
 		AAgent * agent = agents[c];
@@ -713,9 +714,9 @@ float ASimulatedAnnealing::cost(TMap<AAgent *, TArray<FVector2D>> routes) const
 			continue;
 		}
 
-		float routeCost = cost(to2D(agents[c]->GetActorLocation()), route[0]);
+		//float routeCost = cost(to2D(agents[c]->GetActorLocation()), route[0]);
 
-		routeCost += cost(route);
+		float routeCost = cost(agents[c], route);
 
 		totalCost += routeCost;
 
@@ -730,6 +731,46 @@ float ASimulatedAnnealing::cost(TMap<AAgent *, TArray<FVector2D>> routes) const
 FVector2D ASimulatedAnnealing::to2D(FVector vector) const
 {
 	return FVector2D(vector.X, vector.Y);
+}
+
+void ASimulatedAnnealing::writeRoutesToFile(const FString fileName)
+{
+	FString str = FString("-1\t");
+	str.Append(FString::SanitizeFloat(cost(routes)));
+	str.Append(FString("\r\n"));
+
+	for (int32 c = 0; c < agents.Num(); c++) {
+		AAgent * agent = agents[c];
+
+		TArray<FVector2D> route = routes.FindRef(agents[c]);
+
+		str.Append(FString("-1\t"));	// Means new path for Matlab
+		str.Append(FString::SanitizeFloat(cost(agent, route)));	// Cost for this route
+		str.Append(FString("\r\n"));
+
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().Y));
+		str.Append("\t");
+		str.Append(FString::SanitizeFloat(agent->GetActorLocation().X));
+		str.Append("\r\n");
+
+		for (int32 g = 0; g < route.Num() - 1; g++) {
+			str.Append(FString::SanitizeFloat(route[g].Y));
+			str.Append("\t");
+			str.Append(FString::SanitizeFloat(route[g].X));
+			str.Append("\r\n");
+		}
+
+		if (route.Num() != 0) {
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].Y));
+			str.Append("\t");
+			str.Append(FString::SanitizeFloat(route[route.Num() - 1].X));
+			str.Append("\r\n");
+		}
+	}
+
+	FString projectDir = FPaths::GameDir();
+	projectDir += "Output Data/" + fileName;
+	FFileHelper::SaveStringToFile(str, *projectDir);
 }
 
 

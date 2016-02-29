@@ -3,6 +3,8 @@
 #include "Assignment2.h"
 #include "AStar.h"
 
+#define OUTPUT
+
 TArray<FVector2D> AStar::getPath(TMultiMap<FVector2D, FVector2D> graph, TArray<FVector2D> vertices, FVector2D start, FVector2D goal)
 {
 	TArray<FVector2D> closedSet;	// The set of nodes already evaluated.

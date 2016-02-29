@@ -110,7 +110,7 @@ void AMapGenerator::generateCustomers(TArray<FVector2D> & customers)
 
 		GWorld->GetWorld()->SpawnActor<ACustomer>(customerBP, location, FRotator(0, 0, 0));
 
-		customers.Add(FVector2D(locations[c][0], locations[c][1]));
+		customers.Add(FVector2D(location.X, location.Y));
 
 		customersPositions.Add(FVector2D(locations[c][0], locations[c][1]));
 

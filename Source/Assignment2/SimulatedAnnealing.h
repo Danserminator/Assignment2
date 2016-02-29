@@ -88,4 +88,6 @@ private:
 	float cost(TMap<AAgent *, TArray<FVector2D>> routes) const;
 
 	FVector2D to2D(FVector vector) const;
+
+	void writeRoutesToFile(const FString fileName);
 };

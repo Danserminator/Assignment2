@@ -3,7 +3,7 @@
 #include "Assignment2.h"
 #include "VisibilityGraph.h"
 
-//#define OUTPUT
+#define OUTPUT
 
 void AVisibilityGraph::generateGraph(TArray<FVector> corners, TArray<AAgent*> agents, TArray<FVector2D> customers)
 {
@@ -26,6 +26,10 @@ void AVisibilityGraph::generateGraph(TArray<FVector> corners, TArray<AAgent*> ag
 	}
 
 	makeGraph(edges, vertices);
+
+#ifdef OUTPUT
+	writeGraphToFile("VisibilityGraph.txt");
+#endif
 }
 
 TMultiMap<FVector2D, FVector2D> AVisibilityGraph::getGraph()
@@ -40,6 +44,8 @@ TArray<FVector2D> AVisibilityGraph::getVertices()
 
 void AVisibilityGraph::makeObstacles(TArray<FVector> corners)
 {
+	obstacles = TArray<TArray<FVector2D>>();
+
 	FVector2D vertice;
 	bool obstDone = false;
 	TArray<FVector2D> obstacle;
@@ -54,7 +60,7 @@ void AVisibilityGraph::makeObstacles(TArray<FVector> corners)
 
 		obstacle.Add(vertice);
 
-		if (corners[c].Y == 3) {
+		if (corners[c].Z == 3) {
 			obstDone = true;
 		}
 	}
@@ -99,7 +105,7 @@ TArray<TArray<FVector2D>> AVisibilityGraph::getEdges(TArray<FVector> map)
 
 TArray<FVector2D> AVisibilityGraph::createVertices()
 {
-	TArray<FVector2D> vertices;
+	vertices = TArray<FVector2D>();
 
 	FVector2D currPoint, lastPoint, nextPoint;
 	for (int32 c = 0; c < obstacles.Num(); c++) {
@@ -171,7 +177,7 @@ void AVisibilityGraph::makeGraph(TArray<TArray<FVector2D>> edges, TArray<FVector
 		}
 	}
 
-	#ifdef OUTPUT
+	#ifdef OUTPUT1
 	TArray<FVector2D> keys;
 	graph.GetKeys(keys);
 
@@ -254,4 +260,43 @@ bool AVisibilityGraph::intersect(FVector2D point1, FVector2D point2, FVector2D p
 void AVisibilityGraph::add(FVector2D start, FVector2D end)
 {
 	graph.Add(start, end);
+}
+
+void AVisibilityGraph::writeGraphToFile(const FString fileName)
+{
+	FString str;
+	for (int32 i = 0; i < vertices.Num(); i++) {
+		TArray<FVector2D> stuff;
+		graph.MultiFind(vertices[i], stuff);
+		for (int32 c = 0; c < stuff.Num() - 1; c++) {
+			str.Append(FString::SanitizeFloat(vertices[i].Y));
+			str.Append("\t");
+			str.Append(FString::SanitizeFloat(vertices[i].X));
+
+			str.Append("\t\t");
+
+			str.Append(FString::SanitizeFloat(stuff[c].Y));
+			str.Append("\t");
+			str.Append(FString::SanitizeFloat(stuff[c].X));
+			str.Append("\r\n");
+		}
+		if (stuff.Num() != 0) {
+			str.Append(FString::SanitizeFloat(vertices[i].Y));
+			str.Append("\t");
+			str.Append(FString::SanitizeFloat(vertices[i].X));
+
+			str.Append("\t\t");
+
+			
+			str.Append(FString::SanitizeFloat(stuff[stuff.Num() - 1].Y));
+			str.Append("\t");
+			str.Append(FString::SanitizeFloat(stuff[stuff.Num() - 1].X));
+			str.Append("\r\n");
+		}
+		
+	}
+
+	FString projectDir = FPaths::GameDir();
+	projectDir += "Output Data/" + fileName;
+	FFileHelper::SaveStringToFile(str, *projectDir);
 }
