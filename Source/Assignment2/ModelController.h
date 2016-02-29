@@ -31,22 +31,27 @@ protected:
 	TArray<AAgent *> seenAgents, unseenAgents;
 
 	TArray<FVector2D> waypoints;
-	bool followPath = false;
+	//bool followPath = false;
 	int32 waypointsIndex = 0;
 
 	float R;
 	FVector2D target;
 	int32 formationPosition;
-	bool movingFormation = false;
+	//bool movingFormation = false;
 
 	FVector velocity;
 
-	float const errorTolerance = 7;
+	float const errorTolerance = 3;
 	
 	FColor velocityColor = FColor::Blue;		// Color of line representing velocity
 	FColor accelerationColor = FColor::Yellow;	// Color of line representing acceleration
 	FColor searchColor = FColor::Magenta;		// Color of line representing target when searching for more agents
 	FColor radiusColor = FColor(0, 200, 0);		// Color of the circle representing radius
+
+
+	bool followPath = false;
+	bool movingFormation = false;
+	bool everybodyKnows = false;
 
 	bool searching = false;						// Whether the agent is searching for nearby actors or not
 	bool stopped = true;						// Agent has stopped moving after finding all agents
@@ -64,6 +69,12 @@ public:
 	virtual void setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> customers);
 
 	FVector2D getClosest(TArray<FVector2D> positions, FVector2D position);
+
+	void setParameters(bool followPath, bool movingFormation);
+
+	bool updateTarget();
+
+	bool isMovingTowardsTarget(FVector2D target);
 
 protected:
 	virtual bool setTarget();

@@ -26,7 +26,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (play) {
-		setTarget();
+		updateTarget();
 
 		if (waypointReached()) {
 			// TODO
@@ -41,7 +41,13 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 
 			velocity += acceleration;
 
-			velocity = velocity.GetClampedToSize(-vMax, vMax);
+			if (!everybodyKnows) {
+				velocity = velocity.GetClampedToSize(-aMax * 5, aMax * 5);
+			} else {
+				velocity = velocity.GetClampedToSize(-vMax, vMax);
+			}
+
+			
 
 			FVector currentLocation = agent->GetActorLocation();
 
@@ -78,7 +84,7 @@ bool ADynamicPointMassController::waypointReached()
 
 		FVector2D frameVelocity = to2D(velocity) * deltaSec;
 
-		if (frameVelocity.X > frameAcceleration.X || frameVelocity.Y > frameAcceleration.Y) {
+		if (FMath::Abs(frameVelocity.X) > FMath::Abs(frameAcceleration.X) || FMath::Abs(frameVelocity.Y) > FMath::Abs(frameAcceleration.Y)) {
 			// Too high velocity for us to stop in this time frame.
 			return false;
 		} else {

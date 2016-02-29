@@ -70,6 +70,128 @@ FVector2D AModelController::getClosest(TArray<FVector2D> positions, FVector2D po
 	return positions[closestIndex];
 }
 
+void AModelController::setParameters(bool followPath, bool movingFormation)
+{
+	this->followPath = followPath;
+	this->movingFormation = movingFormation;
+}
+
+bool AModelController::updateTarget()
+{
+	FVector2D oldTarget = target;
+
+	if (followPath) {
+		// The agent is following a predetermined path.
+		everybodyKnows = true;
+
+		bool reached = AModelController::waypointReached() && velocity.Size() == 0;		// Check if it is at the target and is standing still
+		if (reached) {
+			waypointsIndex++;
+		}
+		if (waypointsIndex < waypoints.Num()) {
+			target = waypoints[waypointsIndex];
+		}
+
+		return reached;
+
+	} else if (movingFormation) {
+		// The agent is following a moving formation.
+
+		findNewAgents();	// Check if we can see any new agents.
+
+		if (unseenAgents.Num() > 0) {
+			// We cannot see all the other agents so move towards the agents we can see.
+			searching = true;
+			target = approachAgents();
+
+		} else {
+			// We know where all the other agents are.
+			try {
+				target = formation->getTarget(formationPosition);
+
+				// Check if I am moving towards the target right now, else stop.
+				if (!isMovingTowardsTarget(target)) {
+					// Not moving towards the target == we should be stopping.
+
+					target = to2D(agent->GetActorLocation());	// Move towards myself.
+				}
+
+			}
+			catch (std::exception e) {
+				// At least one of the other agents do not know where everybody else are.
+				// I will move towards all the other agents.
+				target = approachAgents();
+			}
+		}
+
+	} else {
+		// The agent is moving towards a stationary formation.
+
+		findNewAgents();	// Check if we can see any new agents.
+
+		if (unseenAgents.Num() > 0) {
+			// We cannot see all the other agents so move towards the agents we can see.
+			searching = true;
+			target = approachAgents();
+			everybodyKnows = false;
+
+			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *agent->GetActorLocation().ToString(), *target.ToString()));
+
+		} else {
+			// We know where all the other agents are.
+			searching = false;
+
+			try {
+				target = formation->getTarget(formationPosition);
+
+				everybodyKnows = true;
+
+				if (AModelController::waypointReached() && velocity.Size() < 0.2) {
+
+				} else {
+
+					// Check if I am moving towards the target right now, else stop.
+					if (!isMovingTowardsTarget(target)) {
+						// Not moving towards the target == we should be stopping.
+
+						target = to2D(agent->GetActorLocation()) - to2D(velocity); // to2D(agent->GetActorLocation());	// Move towards myself.
+					}
+				}
+
+			} catch (std::exception e) {
+				// At least one of the other agents do not know where everybody else are.
+				// I will move towards all the other agents.
+				target = approachAgents();
+				everybodyKnows = false;
+			}
+		}
+	}
+
+
+	return target.Equals(oldTarget, 0.001);
+}
+
+bool AModelController::isMovingTowardsTarget(FVector2D target)
+{
+	if (velocity.Size() == 0) {
+		// We are standing still.
+		return true;
+	}
+
+	FVector2D movingTowards = to2D(velocity);
+	movingTowards.Normalize();
+
+	float rotation = getRotation(agent->GetActorLocation(), target).Yaw;
+
+	FVector2D shouldBeMovingTowards = FVector2D(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation));
+
+	//FVector2D shouldBeMovingTowards = target - to2D(agent->GetActorLocation());
+
+	shouldBeMovingTowards.Normalize();
+
+	return movingTowards.Equals(shouldBeMovingTowards, 1);
+}
+
 bool AModelController::setTarget()
 {
 	if (!followPath) {
