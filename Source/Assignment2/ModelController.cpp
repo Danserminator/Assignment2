@@ -34,6 +34,38 @@ void AModelController::Tick(float DeltaTime)
 	}
 }
 
+void AModelController::setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> customers)
+{
+	waypoints = TArray<FVector2D>();
+
+	if (customers.Num() != 0) {
+		waypoints = AStar::getPath(graph->getGraph(), graph->getVertices(), getClosest(graph->getVertices(), to2D(agent->GetActorLocation())), customers[0]);
+	}
+	
+	for (int32 c = 1; c < customers.Num(); c++) {
+		waypoints.Append(AStar::getPath(graph->getGraph(), graph->getVertices(), customers[c - 1], customers[c]));
+	}
+
+	writeWaypointsToFile("Waypoints.txt");
+}
+
+FVector2D AModelController::getClosest(TArray<FVector2D> positions, FVector2D position)
+{
+	int32 closestIndex = 0;
+	float closestDistance = std::numeric_limits<float>::infinity();
+
+	for (int32 c = 0; c < positions.Num(); c++) {
+		float distance = FVector2D::Distance(positions[c], position);
+
+		if (distance < closestDistance) {
+			closestDistance = distance;
+			closestIndex = c;
+		}
+	}
+
+	return positions[closestIndex];
+}
+
 void AModelController::setTarget() {
 	findNewAgents();
 
@@ -162,4 +194,30 @@ FVector2D AModelController::to2D(FVector vector) const
 FVector AModelController::to3D(FVector2D vector) const
 {
 	return FVector(vector, 0);
+}
+
+void AModelController::writeWaypointsToFile(const FString fileName)
+{
+	FString str;
+	str.Append(FString("-1\t-1"));
+	for (int32 i = 0; i < waypoints.Num(); i++) {
+		str.Append("\r\n");
+		str.Append(FString::SanitizeFloat(waypoints[i].Y));
+		str.Append("\t");
+		str.Append(FString::SanitizeFloat(waypoints[i].X));
+	}
+	str.Append("\r\n");
+
+	FString projectDir = FPaths::GameDir();
+	projectDir += "Output Data/" + fileName;
+
+	FString stored;
+	
+	if (FFileHelper::LoadFileToString(stored, *projectDir)) {
+		stored.Append(str);
+	} else {
+		stored = str;
+	}
+
+	FFileHelper::SaveStringToFile(stored, *projectDir);
 }

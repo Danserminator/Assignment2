@@ -7,6 +7,9 @@
 #include "Agent.h"
 #include "Formation.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "AStar.h"
+#include "VisibilityGraph.h"
+#include <limits>
 #include "ModelController.generated.h"
 
 /**
@@ -26,6 +29,8 @@ protected:
 	AAgent * agent;
 	AFormation * formation;
 	TArray<AAgent *> seenAgents, unseenAgents;
+
+	TArray<FVector2D> waypoints;
 
 	float R;
 	FVector2D target;
@@ -52,6 +57,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 	
+	UFUNCTION(BlueprintCallable, Category = "Model Controller")
+	virtual void setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> customers);
+
+	FVector2D getClosest(TArray<FVector2D> positions, FVector2D position);
+
 protected:
 	virtual void setTarget();
 
@@ -78,4 +88,6 @@ protected:
 	virtual FVector2D to2D(FVector vector) const;
 
 	virtual FVector to3D(FVector2D vector) const;
+
+	void writeWaypointsToFile(const FString fileName);
 };

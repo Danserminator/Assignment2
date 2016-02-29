@@ -32,7 +32,7 @@ class ASSIGNMENT2_API AMapGenerator : public ALevelScriptActor
 	void generateObstacles(TArray<FVector> & corners);
 
 	UFUNCTION(BlueprintCallable, Category = "Map Generation")
-	void generateAgents(float r, AFormation * formation, TArray<AAgent *> & agents);
+	void generateAgents(TArray<AAgent *> & agents);
 
 	UFUNCTION(BlueprintCallable, Category = "Map Generation")
 	void generateFormation(float d, TArray<FVector2D> & positions);

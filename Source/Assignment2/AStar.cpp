@@ -15,6 +15,26 @@ TArray<FVector2D> AStar::getPath(TMultiMap<FVector2D, FVector2D> graph, TArray<F
 
 	TMap<FVector2D, float> gScore = infMap(vertices);	// map with default value of Infinity
 
+#ifdef OUTPUT
+	FString str;
+	str.Append("Vertices hax:");
+	for (int32 c = 0; c < vertices.Num(); c++) {
+		str.Append("\t\t(");
+		str.Append(FString::SanitizeFloat(vertices[c].Y));
+		str.Append(", ");
+		str.Append(FString::SanitizeFloat(vertices[c].X));
+		str.Append(")\r\n");
+	}
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+
+	str = FString("Start: (");
+	str.Append(FString::SanitizeFloat(start.Y));
+	str.Append(", ");
+	str.Append(FString::SanitizeFloat(start.X));
+	str.Append(")");
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *str);
+#endif
+
 	gScore[start] = 0;	// Cost from start along best known path.
 						// Estimated total cost from start to goal through y.
 

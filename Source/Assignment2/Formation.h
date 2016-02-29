@@ -44,12 +44,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Formation")
-	void initFormation(TArray<FVector2D> positions, FVector velocity);
+	void initFormation(TArray<FVector2D> positions, FVector velocity, int32 n);
 
 	UFUNCTION(BlueprintCallable, Category = "Formation")
 	void togglePlay();
-
-	void setNumAgents(int32 n);
 
 	int32 foundAllAgents(FVector2D location);
 

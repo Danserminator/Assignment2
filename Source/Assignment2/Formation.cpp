@@ -48,20 +48,16 @@ void AFormation::SetupPlayerInputComponent(class UInputComponent* InputComponent
 
 }
 
-void AFormation::initFormation(TArray<FVector2D> positions, FVector velocity)
+void AFormation::initFormation(TArray<FVector2D> positions, FVector velocity, int32 n)
 {
 	formationPositions = positions;
 	this->velocity = FVector2D(velocity.X, velocity.Y);
+	numAgents = n;
 }
 
 void AFormation::togglePlay()
 {
 	play = !play;
-}
-
-void AFormation::setNumAgents(int32 n)
-{
-	numAgents = n;
 }
 
 int32 AFormation::foundAllAgents(FVector2D location)

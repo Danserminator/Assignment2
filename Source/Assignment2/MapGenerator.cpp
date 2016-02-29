@@ -7,6 +7,13 @@
 
 void AMapGenerator::generateObstacles(TArray<FVector> & corners)
 {
+	{
+		// This have nothing to do with anything here. CLEARS A FILE!
+		FString projectDir = FPaths::GameDir();
+		projectDir += "Output Data/Waypoints.txt";
+		FFileHelper::SaveStringToFile(FString(), *projectDir);
+	}
+
 	// Get MazeBlock blueprint
 	auto cls = StaticLoadObject(UObject::StaticClass(), nullptr,
 								TEXT("Blueprint'/Game/TopDownCPP/Blueprints/BLock.Block'"));
@@ -41,7 +48,7 @@ void AMapGenerator::generateObstacles(TArray<FVector> & corners)
 	}
 }
 
-void AMapGenerator::generateAgents(float r, AFormation * formation, TArray<AAgent *> & agents)
+void AMapGenerator::generateAgents(TArray<AAgent *> & agents) // float r, AFormation * formation, TArray<AAgent *> & agents)
 {
 	// Get Agent blueprint
 	auto cls = StaticLoadObject(UObject::StaticClass(), nullptr,
@@ -52,7 +59,7 @@ void AMapGenerator::generateAgents(float r, AFormation * formation, TArray<AAgen
 	// Read positions of agents
 	TArray<TArray<float>> locations = readData(positionsFile);
 
-	formation->setNumAgents(10);
+	//formation->setNumAgents(10);
 
 	// Spawn agents
 	for (int32 c = 0; c < locations.Num(); c++) {
@@ -68,9 +75,11 @@ void AMapGenerator::generateAgents(float r, AFormation * formation, TArray<AAgen
 		#endif
 	}
 
+	/*
 	for (int32 c = 0; c < locations.Num(); c++) {
 		agents[c]->init(r, formation, agents);
 	}
+	*/
 }
 
 void AMapGenerator::generateFormation(float d, TArray<FVector2D> & positions)

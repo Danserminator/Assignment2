@@ -19,6 +19,7 @@ public:
 	// Sets default values for this character's properties
 	AAgent();
 
+	UFUNCTION(BlueprintCallable, Category = "Agent")
 	void init(float r, AFormation * f, TArray<AAgent *> agents);
 	
 };
