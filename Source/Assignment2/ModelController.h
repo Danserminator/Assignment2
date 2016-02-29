@@ -41,7 +41,7 @@ protected:
 
 	FVector velocity;
 
-	float const errorTolerance = 5;
+	float const errorTolerance = 7;
 	
 	FColor velocityColor = FColor::Blue;		// Color of line representing velocity
 	FColor accelerationColor = FColor::Yellow;	// Color of line representing acceleration

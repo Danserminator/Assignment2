@@ -26,7 +26,9 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (play) {
-		if (setTarget()) {
+		setTarget();
+
+		if (waypointReached()) {
 			// TODO
 		} else {
 			acceleration = getAcceleration();
@@ -67,7 +69,9 @@ FVector2D ADynamicPointMassController::getBrakeTarget()
 
 bool ADynamicPointMassController::waypointReached()
 {
+	bool stoppedPre = stopped;
 	if (AModelController::waypointReached()) {
+		stopped = stoppedPre;
 		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
 		FVector2D frameAcceleration = to2D(getAcceleration()) * deltaSec;

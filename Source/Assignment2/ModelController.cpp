@@ -83,14 +83,12 @@ bool AModelController::setTarget()
 				try {											// Get target from formation after finding all agents and stationary
 					target = formation->getTarget(formationPosition);
 
-					/*
 					FVector2D fV = formation->getVelocity();
-					if (fV.X + fV.Y != 0) {						// TODO: > epsilon?
+					if (!movingFormation && fV.X + fV.Y != 0) {	// TODO: > epsilon?
 						movingFormation = true;
 						stopped = false;
 						//adjustTarget(fV);
 					}
-					*/
 
 					searching = false;
 				}
@@ -99,9 +97,9 @@ bool AModelController::setTarget()
 				}
 			}
 			else {
-				//if (!movingFormation) {
+				if (!movingFormation) {
 					target = getBrakeTarget();
-				//}
+				}
 			}
 		}
 	} else {
@@ -192,7 +190,10 @@ bool AModelController::waypointReached()
 	FVector2D currentLocation = to2D(agent->GetActorLocation());
 
 	bool reached = currentLocation.Equals(target, errorTolerance);
-	//stopped = reached;
+
+	if (reached) {
+		stopped = true;
+	}
 
 	return reached;
 }
