@@ -71,7 +71,7 @@ void AMapGenerator::generateAgents(TArray<AAgent *> & agents) // float r, AForma
 		agents.Add(agent);
 
 		#ifdef OUTPUT
-		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%f, %f}\r\n"), c, agents[c]->GetActorLocation().X, agents[c]->GetActorLocation().Y));
+		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%f, %f}\r\n"), c, agents[c]->GetActorLocation().X, agents[c]->GetActorLocation().Y));
 		#endif
 	}
 
@@ -97,7 +97,7 @@ void AMapGenerator::generateFormation(float d, TArray<FVector2D> & positions)
 	for (int32 c = 0; c < num; c++) {
 		positions.Add(gridToLocation((xLoc[c] - (xMax / 2)) * d, (yLoc[c] - (yMax / 2)) * d));
 		#ifdef OUTPUT
-		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("Position #%d: {%f, %f}\r\n"), c, positions[c].X, positions[c].Y));
+		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("Position #%d: {%f, %f}\r\n"), c, positions[c].X, positions[c].Y));
 		#endif
 	}
 }
@@ -122,10 +122,6 @@ void AMapGenerator::generateCustomers(TArray<FVector2D> & customers)
 		customers.Add(FVector2D(location.X, location.Y));
 
 		customersPositions.Add(FVector2D(locations[c][0], locations[c][1]));
-
-#ifdef OUTPUT
-		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%f, %f}\r\n"), c, agents[c]->GetActorLocation().X, agents[c]->GetActorLocation().Y));
-#endif
 	}
 }
 

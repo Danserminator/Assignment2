@@ -3,7 +3,7 @@
 #include "Assignment2.h"
 #include "VisibilityGraph.h"
 
-#define OUTPUT
+//#define OUTPUT
 
 void AVisibilityGraph::generateGraph(TArray<FVector> corners, TArray<AAgent*> agents, TArray<FVector2D> customers)
 {

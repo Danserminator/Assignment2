@@ -3,7 +3,7 @@
 #include "Assignment2.h"
 #include "SimulatedAnnealing.h"
 
-#define OUTPUT
+//#define OUTPUT
 
 void ASimulatedAnnealing::simulatedAnnealing(AVisibilityGraph * graph, TArray<AAgent *> agents, TArray<FVector2D> inputCustomers,
 	float temperature, float alpha, float beta, float M0, float maxTime)

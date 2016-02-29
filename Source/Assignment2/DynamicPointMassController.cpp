@@ -26,10 +26,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (play) {
-		#ifdef OUTPUT
-		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej från dynamic point mass")));
-		#endif
-
 		if (setTarget()) {
 			// TODO
 		} else {
@@ -66,7 +62,7 @@ FVector2D ADynamicPointMassController::getBrakeTarget()
 		normVelocity = to2D(velocity);
 	}
 
-	return (to2D(agent->GetActorLocation()) + normVelocity);
+	return (to2D(agent->GetActorLocation()) + normVelocity + (errorTolerance * 0.9));
 }
 
 bool ADynamicPointMassController::waypointReached()

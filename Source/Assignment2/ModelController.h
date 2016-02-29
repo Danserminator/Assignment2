@@ -37,6 +37,7 @@ protected:
 	float R;
 	FVector2D target;
 	int32 formationPosition;
+	bool movingFormation = false;
 
 	FVector velocity;
 
