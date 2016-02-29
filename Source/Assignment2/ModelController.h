@@ -31,6 +31,8 @@ protected:
 	TArray<AAgent *> seenAgents, unseenAgents;
 
 	TArray<FVector2D> waypoints;
+	bool followPath = false;
+	int32 waypointsIndex = 0;
 
 	float R;
 	FVector2D target;
@@ -38,7 +40,7 @@ protected:
 
 	FVector velocity;
 
-	float const errorTolerance = 1;
+	float const errorTolerance = 5;
 	
 	FColor velocityColor = FColor::Blue;		// Color of line representing velocity
 	FColor accelerationColor = FColor::Yellow;	// Color of line representing acceleration
@@ -63,7 +65,7 @@ public:
 	FVector2D getClosest(TArray<FVector2D> positions, FVector2D position);
 
 protected:
-	virtual void setTarget();
+	virtual bool setTarget();
 
 	virtual void findNewAgents();
 

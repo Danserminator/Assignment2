@@ -36,10 +36,14 @@ void AModelController::Tick(float DeltaTime)
 
 void AModelController::setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> customers)
 {
+	followPath = true;
+
 	waypoints = TArray<FVector2D>();
 
 	if (customers.Num() != 0) {
 		waypoints = AStar::getPath(graph->getGraph(), graph->getVertices(), getClosest(graph->getVertices(), to2D(agent->GetActorLocation())), customers[0]);
+	} else {
+		waypoints.Add(to2D(agent->GetActorLocation()));
 	}
 	
 	for (int32 c = 1; c < customers.Num(); c++) {
@@ -66,30 +70,47 @@ FVector2D AModelController::getClosest(TArray<FVector2D> positions, FVector2D po
 	return positions[closestIndex];
 }
 
-void AModelController::setTarget() {
-	findNewAgents();
+bool AModelController::setTarget()
+{
+	if (!followPath) {
+		findNewAgents();
 
-	if (unseenAgents.Num() > 0) {							// Approach target if there are still unseen agents
-		searching = true;
-		target = approachAgents();
-	} else {												// Otherwise move towards assigned position in formation
-		if (stopped) {
-			try {											// Get target from formation after finding all agents and stationary
-				target = formation->getTarget(formationPosition);
+		if (unseenAgents.Num() > 0) {							// Approach target if there are still unseen agents
+			searching = true;
+			target = approachAgents();
+		} else {												// Otherwise move towards assigned position in formation
+			if (stopped) {
+				try {											// Get target from formation after finding all agents and stationary
+					target = formation->getTarget(formationPosition);
 
-				FVector2D fV = formation->getVelocity();
-				if (fV.X + fV.Y != 0) {						// TODO: > epsilon?
-					//adjustTarget(fV);
+					FVector2D fV = formation->getVelocity();
+					if (fV.X + fV.Y != 0) {						// TODO: > epsilon?
+						//adjustTarget(fV);
+					}
+
+					searching = false;
 				}
-
-				searching = false;
-			} catch (std::exception e) {
-				target = to2D(agent->GetActorLocation());	// Remain stationary until all agents have found each other
+				catch (std::exception e) {
+					target = to2D(agent->GetActorLocation());	// Remain stationary until all agents have found each other
+				}
 			}
-		} else {
-			target = getBrakeTarget();
+			else {
+				target = getBrakeTarget();
+			}
 		}
+	} else {
+		bool reached = waypointReached();
+		if (reached) {
+			waypointsIndex++;
+		}
+		if (waypointsIndex < waypoints.Num()) {
+			target = waypoints[waypointsIndex];
+		}
+
+		return reached;
 	}
+
+	return false;
 }
 
 void AModelController::findNewAgents()

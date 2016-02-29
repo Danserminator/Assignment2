@@ -3,7 +3,7 @@
 #include "Assignment2.h"
 #include "DynamicPointMassController.h"
 
-#define OUTPUT
+//#define OUTPUT
 
 ADynamicPointMassController::ADynamicPointMassController() {
 
@@ -30,9 +30,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej från dynamic point mass")));
 		#endif
 
-		setTarget();
-
-		if (waypointReached()) {
+		if (setTarget()) {
 			// TODO
 		} else {
 			acceleration = getAcceleration();
@@ -108,7 +106,8 @@ FVector ADynamicPointMassController::getAcceleration() const
 
 	velocityLength = velocityLength * velocityLength / (aMax * 2);
 
-	float distLeftLength = UKismetMathLibrary::VSize(to3D(target) - to3D(to2D(agent->GetActorLocation()))) - safetyBuffer;
+	float distLeftLength = (target - to2D(agent->GetActorLocation())).Size() - safetyBuffer;
+	//float distLeftLength = UKismetMathLibrary::VSize(to3D(target) - to3D(to2D(agent->GetActorLocation()))) - safetyBuffer;
 
 
 	if (velocityLength >= distLeftLength) {

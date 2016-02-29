@@ -22,7 +22,7 @@ private:
 	float const aMax = 1;
 	float const vMax = 100;
 
-	float const safetyBuffer = 1;
+	float const safetyBuffer = 0;
 
 
 public:

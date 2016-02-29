@@ -228,7 +228,7 @@ bool AVisibilityGraph::canSee(FVector2D start, FVector2D end, TArray<TArray<FVec
 			}
 		}
 
-		if (intersect(start, end, edges[c][0] - 1, edges[c][1] + 1) || intersect(start, end, edges[c][0] + 1, edges[c][1] - 1)) {
+		if (intersect(start, end, edges[c][0] - bufferSize, edges[c][1] + bufferSize) || intersect(start, end, edges[c][0] + bufferSize, edges[c][1] - bufferSize)) {
 			return false;
 		}
 	}

@@ -20,7 +20,7 @@ private:
 
 	TMap<FVector2D, FVector2D> verticesToOriginal;
 
-	float bufferSize = 0.01;
+	float bufferSize = 5;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "VisibilityGraph")
