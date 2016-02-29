@@ -46,6 +46,9 @@ protected:
 	float radiusSegments = 24;					// # of segments in the circle representing radius
 
 public:
+	// Called when the game starts or when spawned
+	//virtual void BeginPlay() override;
+
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 	

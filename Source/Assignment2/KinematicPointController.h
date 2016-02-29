@@ -6,39 +6,31 @@
 #include "Engine.h"
 #include "Agent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "DynamicPointMassController.generated.h"
+#include "KinematicPointController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ASSIGNMENT2_API ADynamicPointMassController : public AModelController
+class ASSIGNMENT2_API AKinematicPointController : public AModelController
 {
 	GENERATED_BODY()
-
+	
 private:
-	FVector acceleration;
-	float const mass = 1;
-	float const aMax = 1;
+	FVector velocity;
 	float const vMax = 100;
-
-	float const safetyBuffer = 1;
 
 
 public:
 	// Sets default values for this character's properties
-	ADynamicPointMassController();
+	AKinematicPointController();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
-
+	
 private:
-	virtual FVector2D getBrakeTarget() override;
-
-	virtual bool waypointReached() override;
-
-	virtual FVector getAcceleration() const;
+	virtual FVector getVelocity() const;
 };

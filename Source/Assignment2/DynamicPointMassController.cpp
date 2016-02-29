@@ -3,11 +3,12 @@
 #include "Assignment2.h"
 #include "DynamicPointMassController.h"
 
-//#define OUTPUT
+#define OUTPUT
 
 ADynamicPointMassController::ADynamicPointMassController() {
 
 }
+
 
 // Called when the game starts or when spawned
 void ADynamicPointMassController::BeginPlay() 
@@ -19,7 +20,6 @@ void ADynamicPointMassController::BeginPlay()
 	unseenAgents = agent->unseenAgents;
 }
 
-
 // Called every frame
 void ADynamicPointMassController::Tick(float DeltaTime)
 {
@@ -27,7 +27,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 
 	if (play) {
 		#ifdef OUTPUT
-		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej")));
+		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej från dynamic point mass")));
 		#endif
 
 		setTarget();

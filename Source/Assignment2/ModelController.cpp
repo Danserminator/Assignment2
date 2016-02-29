@@ -5,6 +5,18 @@
 
 //#define OUTPUT
 
+/*
+void AModelController::BeginPlay()
+{
+	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
+
+	R = agent->R;
+	formation = agent->formation;
+	unseenAgents = agent->unseenAgents;
+}
+*/
+
+
 // Called every frame
 void AModelController::Tick(float DeltaTime)
 {
