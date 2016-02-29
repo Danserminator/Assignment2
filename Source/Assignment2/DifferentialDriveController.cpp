@@ -23,10 +23,6 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	if (play) {
-#ifdef OUTPUT
-		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej från differential drive")));
-#endif
-
 		setTarget();
 
 		if (waypointReached()) {
@@ -81,14 +77,18 @@ FVector ADifferentialDriveController::getVelocity()
 
 	newVelocity.Y = getYVelocity(hyp);	
 
+	FVector2D remainingDistance = target - to2D(agent->GetActorLocation());
+	remainingDistance.X = FMath::Abs(remainingDistance.X);
+	remainingDistance.Y = FMath::Abs(remainingDistance.Y);
+
 	//float maxSize = newVelocity.Size() * deltaSec;
 
 	//newVelocity.X = 
 
 	//newVelocity = newVelocity.ClampMaxSize(maxSize);
 
-	newVelocity.X = FMath::Clamp(newVelocity.X, -(target.X - agent->GetActorLocation().X), (target.X - agent->GetActorLocation().X));
-	newVelocity.Y = FMath::Clamp(newVelocity.Y, -(target.Y - agent->GetActorLocation().Y), (target.Y - agent->GetActorLocation().Y));
+	newVelocity.X = FMath::Clamp(newVelocity.X, -remainingDistance.X, remainingDistance.X);
+	newVelocity.Y = FMath::Clamp(newVelocity.Y, -remainingDistance.Y, remainingDistance.Y);
 
 	return newVelocity;
 }

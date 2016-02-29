@@ -24,10 +24,6 @@ void AKinematicPointController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	if (play) {
-#ifdef OUTPUT
-		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej från kinematic point")));
-#endif
-
 		setTarget();
 
 		if (waypointReached()) {
@@ -57,6 +53,8 @@ FVector AKinematicPointController::getVelocity() const
 	newVelocity = vMax * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
 
 	FVector2D remainingDistance = target - to2D(agent->GetActorLocation());
+	remainingDistance.X = FMath::Abs(remainingDistance.X);
+	remainingDistance.Y = FMath::Abs(remainingDistance.Y);
 
 	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
