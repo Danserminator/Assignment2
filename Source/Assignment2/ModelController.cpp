@@ -193,6 +193,7 @@ bool AModelController::isMovingTowardsTarget(FVector2D target)
 
 bool AModelController::setTarget()
 {
+	bool reached = false;
 	if (!followPath) {
 		findNewAgents();
 
@@ -224,20 +225,23 @@ bool AModelController::setTarget()
 			}
 		}
 	} else {
-		bool reached = waypointReached();
+		reached = waypointReached();
 		if (reached) {
 			waypointsIndex++;
 		}
 		if (waypointsIndex < waypoints.Num()) {
 			target = waypoints[waypointsIndex];
 		}
-
-		return reached;
 	}
 
 	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *agent->GetActorLocation().ToString(), *target.ToString()));
 
-	return false;
+	if (initTarget) {
+		initTarget = false;
+		agent->SetActorRotation(getRotation(agent->GetActorLocation(), target));
+	}
+
+	return reached;
 }
 
 void AModelController::findNewAgents()

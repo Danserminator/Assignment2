@@ -15,7 +15,7 @@ class ASSIGNMENT2_API AKinematicCarController : public AModelController
 	
 private:
 	FVector velocity;
-	float const vMax = 100;
+	float const vMax = 10;
 	float const maxAngle = 18;
 	float const L = 1;
 	bool rotating = true;
@@ -36,7 +36,7 @@ private:
 
 	virtual FVector getVelocity();
 
-	virtual float getXVelocity() const;
+	virtual float getXVelocity(float hyp) const;
 
-	virtual float getYVelocity() const;
+	virtual float getYVelocity(float hyp) const;
 };

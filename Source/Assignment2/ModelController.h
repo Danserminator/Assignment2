@@ -25,7 +25,6 @@ public:
 	bool play;
 	
 protected:
-
 	AAgent * agent;
 	AFormation * formation;
 	TArray<AAgent *> seenAgents, unseenAgents;
@@ -35,6 +34,7 @@ protected:
 	int32 waypointsIndex = 0;
 
 	float R;
+	bool initTarget = true;						// So the agent can rotate towards its first target
 	FVector2D target;
 	int32 formationPosition;
 	//bool movingFormation = false;
@@ -47,7 +47,6 @@ protected:
 	FColor accelerationColor = FColor::Yellow;	// Color of line representing acceleration
 	FColor searchColor = FColor::Magenta;		// Color of line representing target when searching for more agents
 	FColor radiusColor = FColor(0, 200, 0);		// Color of the circle representing radius
-
 
 	bool followPath = false;
 	bool movingFormation = false;
