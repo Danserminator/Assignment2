@@ -23,9 +23,9 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 protected:
-	virtual void rotate();
+	virtual void rotate(float deltaSec);
 
-	virtual FVector getVelocity();
+	virtual FVector getVelocity(float deltaSec);
 
 	virtual float getXVelocity(float hyp) const;
 

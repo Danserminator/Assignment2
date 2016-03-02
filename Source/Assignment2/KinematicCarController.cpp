@@ -11,20 +11,25 @@ void AKinematicCarController::Tick(float DeltaSeconds)
 		setTarget();
 
 		if (waypointReached()) {
+			velocity = FVector(0, 0, 0);
 			// TODO
 		} else {
-			velocity = getVelocity();
+			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
+
+			velocity = getVelocity(deltaSec);
 
 			FVector currentLocation = agent->GetActorLocation();
 
 			FVector newLocation = currentLocation + velocity;
 
 			agent->SetActorLocation(newLocation);
+
+			velocity /= deltaSec;
 		}
 	}
 }
 
-void AKinematicCarController::rotate()
+void AKinematicCarController::rotate(float deltaSec)
 {
 	float tarRot = getRotation(agent->GetActorLocation(), target).Yaw;	// Target rotation
 
@@ -33,8 +38,6 @@ void AKinematicCarController::rotate()
 	tarRot = tarRot - curRot;
 
 	float clampedRotation = UKismetMathLibrary::ClampAngle(tarRot, -maxAngle, maxAngle);
-
-	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
 	clampedRotation *= deltaSec;
 
@@ -51,13 +54,11 @@ void AKinematicCarController::rotate()
 	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Angle: %s"), *FString::SanitizeFloat(angle)));
 }
 
-FVector AKinematicCarController::getVelocity()
+FVector AKinematicCarController::getVelocity(float deltaSec)
 {
-	rotate();
+	rotate(deltaSec);
 
 	FVector newVelocity(0, 0, 0);
-
-	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
 	float hyp = deltaSec * vMax;
 
@@ -65,7 +66,7 @@ FVector AKinematicCarController::getVelocity()
 
 	newVelocity.Y = getYVelocity(hyp);
 
-	newVelocity.GetClampedToSize(-hyp, hyp);				// TODO: GetClampMaxSize?
+	newVelocity.GetClampedToSize(-hyp, hyp);
 
 	return newVelocity;
 }
