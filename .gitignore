@@ -11,3 +11,9 @@ Saved
 *.VC.opendb
 Time
 Assignment2.uproject - Shortcut.lnk
+Assignment2 - genväg
+Output Data
+
+Input Data/*
+!Input Data/P1a
+!Input Data/P3a

@@ -16,7 +16,6 @@ void AModelController::BeginPlay()
 }
 */
 
-
 // Called every frame
 void AModelController::Tick(float DeltaTime)
 {
@@ -135,7 +134,7 @@ bool AModelController::updateTarget()
 			target = approachAgents();
 			everybodyKnows = false;
 
-			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *agent->GetActorLocation().ToString(), *target.ToString()));
+			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *agent->GetActorLocation().ToString(), *target.ToString()));
 
 		} else {
 			// We know where all the other agents are.

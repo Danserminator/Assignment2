@@ -7,11 +7,10 @@
 #include "Agent.generated.h"
 
 UCLASS()
-class ASSIGNMENT2_API AAgent : public ACharacter
-{
+class ASSIGNMENT2_API AAgent : public ACharacter {
 	GENERATED_BODY()
 
-public:
+	public:
 	float R;
 	AFormation * formation;
 	TArray<AAgent *> unseenAgents;
@@ -20,6 +19,9 @@ public:
 	AAgent();
 
 	UFUNCTION(BlueprintCallable, Category = "Agent")
-	void init(float r, AFormation * f, TArray<AAgent *> agents);
-	
+		void init(TArray<AAgent *> agents);
+
+	UFUNCTION(BlueprintCallable, Category = "Agent")
+		void init2(float r, AFormation * f, TArray<AAgent *> agents);
+
 };

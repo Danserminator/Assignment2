@@ -7,16 +7,21 @@
 // Sets default values
 AAgent::AAgent()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-void AAgent::init(float r, AFormation * f, TArray<AAgent *> agents)
+void AAgent::init(TArray<AAgent *> agents) {
+	unseenAgents = agents;
+
+	SpawnDefaultController();
+}
+
+void AAgent::init2(float r, AFormation * f, TArray<AAgent *> agents)
 {
 	R = r;
 	formation = f;
-	unseenAgents = agents;
 
-	SpawnDefaultController();	
+	init(agents);
 }
