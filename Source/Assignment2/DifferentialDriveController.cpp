@@ -3,20 +3,7 @@
 #include "Assignment2.h"
 #include "DifferentialDriveController.h"
 
-#define OUTPUT
-
-ADifferentialDriveController::ADifferentialDriveController()
-{
-}
-
-void ADifferentialDriveController::BeginPlay()
-{
-	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-
-	R = agent->R;
-	formation = agent->formation;
-	unseenAgents = agent->unseenAgents;
-}
+//#define OUTPUT
 
 void ADifferentialDriveController::Tick(float DeltaSeconds)
 {

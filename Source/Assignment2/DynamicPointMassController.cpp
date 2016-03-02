@@ -5,21 +5,6 @@
 
 //#define OUTPUT
 
-ADynamicPointMassController::ADynamicPointMassController() {
-
-}
-
-
-// Called when the game starts or when spawned
-void ADynamicPointMassController::BeginPlay() 
-{
-	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-
-	R = agent->R;
-	formation = agent->formation;
-	unseenAgents = agent->unseenAgents;
-}
-
 // Called every frame
 void ADynamicPointMassController::Tick(float DeltaTime)
 {
@@ -46,8 +31,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 			} else {
 				velocity = velocity.GetClampedToSize(-vMax, vMax);
 			}
-
-			
 
 			FVector currentLocation = agent->GetActorLocation();
 
@@ -114,7 +97,6 @@ FVector ADynamicPointMassController::getAcceleration() const
 
 	float distLeftLength = (target - to2D(agent->GetActorLocation())).Size() - safetyBuffer;
 	//float distLeftLength = UKismetMathLibrary::VSize(to3D(target) - to3D(to2D(agent->GetActorLocation()))) - safetyBuffer;
-
 
 	if (velocityLength >= distLeftLength) {
 		// Check if we should start breaking

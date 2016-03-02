@@ -13,25 +13,16 @@ class ASSIGNMENT2_API AKinematicCarController : public AModelController
 {
 	GENERATED_BODY()
 	
-private:
-	FVector velocity;
+protected:
 	float const vMax = 10;
 	float const maxAngle = 18;
 	float const L = 1;
-	bool rotating = true;
-
 
 public:
-	// Sets default values for this character's properties
-	AKinematicCarController();
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
-private:
+protected:
 	virtual void rotate();
 
 	virtual FVector getVelocity();

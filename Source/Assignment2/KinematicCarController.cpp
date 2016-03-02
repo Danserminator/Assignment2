@@ -3,19 +3,6 @@
 #include "Assignment2.h"
 #include "KinematicCarController.h"
 
-AKinematicCarController::AKinematicCarController()
-{
-}
-
-void AKinematicCarController::BeginPlay()
-{
-	agent = static_cast<AAgent *>(GetPawn()); // Check if can be set in constructor.
-
-	R = agent->R;
-	formation = agent->formation;
-	unseenAgents = agent->unseenAgents;
-}
-
 void AKinematicCarController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -45,9 +32,9 @@ void AKinematicCarController::rotate()
 
 	tarRot = tarRot - curRot;
 
-	float maxAngleR = maxAngle;
+	// TODO: Pröva om det gör skillnad att * deltaSec på maxAngle istället för clamped rotaton
 
-	float clampedRotation = UKismetMathLibrary::ClampAngle(tarRot, -maxAngleR, maxAngleR);
+	float clampedRotation = UKismetMathLibrary::ClampAngle(tarRot, -maxAngle, maxAngle);
 
 	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 

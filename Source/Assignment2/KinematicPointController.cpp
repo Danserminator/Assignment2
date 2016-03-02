@@ -3,21 +3,7 @@
 #include "Assignment2.h"
 #include "KinematicPointController.h"
 
-#define OUTPUT
-
-AKinematicPointController::AKinematicPointController()
-{
-}
-
-// Called when the game starts or when spawned
-void AKinematicPointController::BeginPlay()
-{
-	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-
-	R = agent->R;
-	formation = agent->formation;
-	unseenAgents = agent->unseenAgents;
-}
+//#define OUTPUT
 
 void AKinematicPointController::Tick(float DeltaSeconds)
 {
