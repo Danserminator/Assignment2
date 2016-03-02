@@ -3,32 +3,12 @@
 #include "Assignment2.h"
 #include "KinematicCarController.h"
 
-<<<<<<< HEAD
-AKinematicCarController::AKinematicCarController()
-{
-}
-
-void AKinematicCarController::BeginPlay()
-{
-	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-}
-
-=======
->>>>>>> origin/master
 void AKinematicCarController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
 	if (play) {
-<<<<<<< HEAD
-#ifdef OUTPUT
-		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej från kinematic car")));
-#endif
-
 		updateTarget();
-=======
-		setTarget();
->>>>>>> origin/master
 
 		if (waypointReached()) {
 			velocity = FVector(0, 0, 0);

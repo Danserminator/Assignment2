@@ -5,21 +5,11 @@
 
 //#define OUTPUT
 
-<<<<<<< HEAD
 ADynamicPointMassController::ADynamicPointMassController()
 {
 	errorTolerance = 0.01;	// Because this is the bomb!
 }
 
-
-// Called when the game starts or when spawned
-void ADynamicPointMassController::BeginPlay() 
-{
-	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-}
-
-=======
->>>>>>> origin/master
 // Called every frame
 void ADynamicPointMassController::Tick(float DeltaTime)
 {
@@ -78,7 +68,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				
 				velocity = velocity.GetClampedToSize(-vMax, vMax);
 
-<<<<<<< HEAD
 				FVector currentLocation = agent->GetActorLocation();
 
 				FVector newLocation = currentLocation + (velocity * deltaSec);
@@ -103,9 +92,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 					acceleration = getAcceleration();
 
 					drawLine(2 * acceleration, accelerationColor);
-=======
-			FVector currentLocation = agent->GetActorLocation();
->>>>>>> origin/master
 
 					float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 

@@ -8,10 +8,6 @@
 void AModelController::BeginPlay()
 {
 	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-
-	R = agent->R;
-	formation = agent->formation;
-	unseenAgents = agent->unseenAgents;
 }
 
 // Called every frame
@@ -133,12 +129,8 @@ bool AModelController::updateTarget_moving()
 		}
 	}
 
-<<<<<<< HEAD
 	return target.Equals(oldTarget, 0.001);
 }
-=======
-			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *agent->GetActorLocation().ToString(), *target.ToString()));
->>>>>>> origin/master
 
 bool AModelController::updateTarget_still()
 {
@@ -211,91 +203,7 @@ bool AModelController::isMovingTowardsTarget(FVector2D target)
 
 	shouldBeMovingTowards.Normalize();
 
-<<<<<<< HEAD
 	return movingTowards.Equals(shouldBeMovingTowards, 0.1);
-=======
-	return movingTowards.Equals(shouldBeMovingTowards, 1);
-}
-
-bool AModelController::setTarget()
-{
-	bool reached = false;
-	if (!followPath) {
-		findNewAgents();
-
-		if (unseenAgents.Num() > 0) {							// Approach target if there are still unseen agents
-			searching = true;
-			target = approachAgents();
-		} else {												// Otherwise move towards assigned position in formation
-			if (stopped) {
-				try {											// Get target from formation after finding all agents and stationary
-					target = formation->getTarget(formationPosition);
-
-					FVector2D fV = formation->getVelocity();
-					if (!movingFormation && fV.X + fV.Y != 0) {	// TODO: > epsilon?
-						movingFormation = true;
-						stopped = false;
-						//adjustTarget(fV);
-					}
-
-					searching = false;
-				}
-				catch (std::exception e) {
-					target = to2D(agent->GetActorLocation());	// Remain stationary until all agents have found each other
-				}
-			}
-			else {
-				if (!movingFormation) {
-					target = getBrakeTarget();
-				}
-			}
-		}
-	} else {
-		reached = waypointReached();
-		if (reached) {
-			waypointsIndex++;
-		}
-		if (waypointsIndex < waypoints.Num()) {
-			target = waypoints[waypointsIndex];
-		}
-	}
-
-	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *agent->GetActorLocation().ToString(), *target.ToString()));
-
-	return reached;
-}
-
-void AModelController::findNewAgents()
-{
-	if (unseenAgents.Num() > 0) {							// Do nothing if all agents are already found
-		FVector2D curLoc = to2D(agent->GetActorLocation());
-
-		if (R <= 0) {										// R < 0 means all agents know about all other agents already
-			seenAgents = unseenAgents;
-			unseenAgents.Empty();
-		} else {
-			float dist;
-			for (int32 c = 0; c < unseenAgents.Num(); c++) {
-				dist = FVector2D::Distance(curLoc, to2D(unseenAgents[c]->GetActorLocation()));
-				if (dist <= R) {							// If agent is withing radius
-					if (unseenAgents[c]->GetActorLocation() != agent->GetActorLocation()) {
-						seenAgents.Add(unseenAgents[c]);	// Dont add oneself to seen agents
-					}
-
-					unseenAgents.RemoveAt(c);
-					c--;
-				}
-			}
-		}
-		
-		if (unseenAgents.Num() == 0) {						// If all agents are found, signal formation
-			formationPosition = formation->foundAllAgents(curLoc);
-			if (R > 0) {									// Stop moving after all agents have been found
-				stopped = false;
-			}
-		}
-	}
->>>>>>> origin/master
 }
 
 FVector2D AModelController::approachAgents()

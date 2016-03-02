@@ -12,7 +12,6 @@ AAgent::AAgent()
 
 }
 
-<<<<<<< HEAD
 void AAgent::init(float r, TArray<AAgent *> agents)
 {
 	seeRadius = r;
@@ -71,18 +70,4 @@ TArray<AAgent *> AAgent::getSeenAgents()
 float AAgent::getSeeRadius()
 {
 	return seeRadius;
-=======
-void AAgent::init(TArray<AAgent *> agents) {
-	unseenAgents = agents;
-
-	SpawnDefaultController();
-}
-
-void AAgent::init2(float r, AFormation * f, TArray<AAgent *> agents)
-{
-	R = r;
-	formation = f;
-
-	init(agents);
->>>>>>> origin/master
 }

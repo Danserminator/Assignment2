@@ -8,7 +8,7 @@ void ADynamicCarController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	if (play) {
-		setTarget();
+		updateTarget();
 
 		if (waypointReached()) {
 			// TODO

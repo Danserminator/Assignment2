@@ -31,6 +31,8 @@ private:
 	bool secondTry = true;
 
 public:
+	ADynamicPointMassController();
+
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 

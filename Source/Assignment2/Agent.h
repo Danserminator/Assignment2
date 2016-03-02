@@ -10,14 +10,8 @@ UCLASS()
 class ASSIGNMENT2_API AAgent : public ACharacter {
 	GENERATED_BODY()
 
-<<<<<<< HEAD
 public:
 	float seeRadius;
-=======
-	public:
-	float R;
-	AFormation * formation;
->>>>>>> origin/master
 	TArray<AAgent *> unseenAgents;
 	TArray<AAgent *> seenAgents;
 
@@ -25,7 +19,6 @@ public:
 	AAgent();
 
 	UFUNCTION(BlueprintCallable, Category = "Agent")
-<<<<<<< HEAD
 	void init(float r, TArray<AAgent *> agents);
 
 	void findAgents();
@@ -37,11 +30,4 @@ public:
 	TArray<AAgent *> getSeenAgents();
 
 	float getSeeRadius();
-=======
-		void init(TArray<AAgent *> agents);
-
-	UFUNCTION(BlueprintCallable, Category = "Agent")
-		void init2(float r, AFormation * f, TArray<AAgent *> agents);
-
->>>>>>> origin/master
 };
