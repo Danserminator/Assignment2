@@ -10,10 +10,6 @@ AKinematicCarController::AKinematicCarController()
 void AKinematicCarController::BeginPlay()
 {
 	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-
-	R = agent->R;
-	formation = agent->formation;
-	unseenAgents = agent->unseenAgents;
 }
 
 void AKinematicCarController::Tick(float DeltaSeconds)
@@ -25,7 +21,7 @@ void AKinematicCarController::Tick(float DeltaSeconds)
 		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Hej från kinematic car")));
 #endif
 
-		setTarget();
+		updateTarget();
 
 		if (waypointReached()) {
 			// TODO

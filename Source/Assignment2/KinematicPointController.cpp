@@ -13,10 +13,6 @@ AKinematicPointController::AKinematicPointController()
 void AKinematicPointController::BeginPlay()
 {
 	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
-
-	R = agent->R;
-	formation = agent->formation;
-	unseenAgents = agent->unseenAgents;
 }
 
 void AKinematicPointController::Tick(float DeltaSeconds)
@@ -24,7 +20,7 @@ void AKinematicPointController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	if (play) {
-		setTarget();
+		updateTarget();
 
 		if (waypointReached()) {
 			// TODO

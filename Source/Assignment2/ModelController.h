@@ -10,6 +10,7 @@
 #include "AStar.h"
 #include "VisibilityGraph.h"
 #include <limits>
+#include "General.h"
 #include "ModelController.generated.h"
 
 /**
@@ -25,23 +26,21 @@ public:
 	bool play;
 	
 protected:
-
 	AAgent * agent;
 	AFormation * formation;
-	TArray<AAgent *> seenAgents, unseenAgents;
 
 	TArray<FVector2D> waypoints;
 	//bool followPath = false;
 	int32 waypointsIndex = 0;
 
-	float R;
 	FVector2D target;
-	int32 formationPosition;
+	
+	//int32 formationPosition;
 	//bool movingFormation = false;
 
 	FVector velocity;
 
-	float const errorTolerance = 3;
+	float errorTolerance = 3;					// Change this one in every model FFS!!!
 	
 	FColor velocityColor = FColor::Blue;		// Color of line representing velocity
 	FColor accelerationColor = FColor::Yellow;	// Color of line representing acceleration
@@ -68,22 +67,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Model Controller")
 	virtual void setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> customers);
 
+	UFUNCTION(BlueprintCallable, Category = "Model Controller")
+		void setParameters(AFormation * formation, bool followPath, bool movingFormation);
+
 	FVector2D getClosest(TArray<FVector2D> positions, FVector2D position);
 
-	void setParameters(bool followPath, bool movingFormation);
-
-	bool updateTarget();
-
-	bool isMovingTowardsTarget(FVector2D target);
-
 protected:
-	virtual bool setTarget();
+	virtual bool updateTarget();
 
-	virtual void findNewAgents();
+	virtual bool updateTarget_path();
+
+	virtual bool updateTarget_moving();
+
+	virtual bool updateTarget_still();
+
+	virtual bool isMovingTowardsTarget(FVector2D target);
 
 	virtual FVector2D approachAgents();
-
-	virtual void adjustTarget(FVector2D formationVelocity);
 
 	virtual FVector2D getBrakeTarget();
 
@@ -98,10 +98,6 @@ protected:
 	virtual void setRotation();
 
 	virtual void drawLine(FVector line, FColor color) const;
-
-	virtual FVector2D to2D(FVector vector) const;
-
-	virtual FVector to3D(FVector2D vector) const;
 
 	void writeWaypointsToFile(const FString fileName);
 };

@@ -9,6 +9,7 @@
 #include "Settings.h"
 #include "VisibilityGraph.h"
 #include "AStar.h"
+#include "General.h"
 #include "SimulatedAnnealing.generated.h"
 
 /**
@@ -86,8 +87,6 @@ private:
 	float cost(AAgent * agent, TArray<FVector2D> route) const;
 
 	float cost(TMap<AAgent *, TArray<FVector2D>> routes) const;
-
-	FVector2D to2D(FVector vector) const;
 
 	void writeRoutesToFile(const FString fileName);
 };

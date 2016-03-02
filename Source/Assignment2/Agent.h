@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GameFramework/Character.h"
-#include "Formation.h"
+#include "General.h"
 #include "Agent.generated.h"
 
 UCLASS()
@@ -12,14 +12,23 @@ class ASSIGNMENT2_API AAgent : public ACharacter
 	GENERATED_BODY()
 
 public:
-	float R;
-	AFormation * formation;
+	float seeRadius;
 	TArray<AAgent *> unseenAgents;
+	TArray<AAgent *> seenAgents;
 
 	// Sets default values for this character's properties
 	AAgent();
 
 	UFUNCTION(BlueprintCallable, Category = "Agent")
-	void init(float r, AFormation * f, TArray<AAgent *> agents);
-	
+	void init(float r, TArray<AAgent *> agents);
+
+	void findAgents();
+
+	bool foundAllAgents();
+
+	int32 numberUnseenAgents();
+
+	TArray<AAgent *> getSeenAgents();
+
+	float getSeeRadius();
 };

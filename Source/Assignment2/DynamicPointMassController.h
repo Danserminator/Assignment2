@@ -22,7 +22,13 @@ private:
 	float const aMax = 1;
 	float const vMax = 100;
 
-	float const safetyBuffer = 0.1;
+	float const safetyBuffer = 0;
+
+	float everybodyKnowsSpeed = UKismetMathLibrary::FMax(aMax * 5, vMax);
+
+	bool moveTarget = false;
+	bool firstTry = true;
+	bool secondTry = true;
 
 
 public:
@@ -41,4 +47,6 @@ private:
 	virtual bool waypointReached() override;
 
 	virtual FVector getAcceleration() const;
+
+	virtual bool updateTarget_moving();
 };

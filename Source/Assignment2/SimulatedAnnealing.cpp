@@ -728,11 +728,6 @@ float ASimulatedAnnealing::cost(TMap<AAgent *, TArray<FVector2D>> routes) const
 	return longestRoute;
 }
 
-FVector2D ASimulatedAnnealing::to2D(FVector vector) const
-{
-	return FVector2D(vector.X, vector.Y);
-}
-
 void ASimulatedAnnealing::writeRoutesToFile(const FString fileName)
 {
 	FString str = FString("-1\t");

@@ -6,6 +6,8 @@
 #include <limits>
 #include <stdexcept>
 #include "Engine.h"
+#include "General.h"
+#include "Agent.h"
 #include "Formation.generated.h"
 
 UCLASS()
@@ -19,10 +21,14 @@ private:
 	FVector2D location;
 	FVector2D velocity;
 
-	TArray<FVector2D> agentPositions;				// Positions of all agents that have found all other agents
+	TArray<AAgent *> agents;						// All agents that have found all other agents.
+	TMap<AAgent *, FVector2D> agentsToLocation;		// Where every agent should be located.
 	TArray<FVector2D> formationPositions;			// Position of formation relative to origin of formation
 
-	TArray<FVector2D> assignedPositions;			// Which position in the formation an agent has been assigned
+	//TArray<FVector2D> agentPositions;				// Positions of all agents that have found all other agents
+	
+
+	//TArray<FVector2D> assignedPositions;			// Which position in the formation an agent has been assigned
 			// TODO: Nu använder jag bara .Y i formationPositions, göra om så assignedpositions har faktiska positionen?
 
 	bool play;
@@ -49,9 +55,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Formation")
 	void togglePlay();
 
-	int32 foundAllAgents(FVector2D location);
+	void foundAllAgents(AAgent * agent);
 
-	FVector2D getTarget(int32 i);
+	FVector2D getTarget(AAgent * agent);
 
 	FVector2D getVelocity();
 
@@ -61,6 +67,9 @@ private:
 	void moveFormation();
 
 	TArray<TArray<float>> createMatrix();
+
+
+
 
 	TArray<FVector2D> assignTasks(TArray<TArray<float>> & matrix);
 
@@ -82,57 +91,5 @@ private:
 
 	bool findSolution(TArray<TArray<float>> & matrix, TArray<TArray<bool>> & assignment, int32 row);
 
-	float costHeuristic(FVector2D agent, FVector2D goal);
-
-	/*
-	TArray<FVector2D> assignTasks(TArray<TArray<float>> matrix);
-
-	int32 step_one(TArray<TArray<float>> & matrix);
-
-	int32 step_two(TArray<TArray<float>> & matrix, TArray<TArray<int32>> & maskMatrix,
-				   TArray<bool> & rowCover, TArray<bool> & colCover);
-
-	int32 step_three(TArray<TArray<int32>> & maskMatrix, TArray<bool> & colCover);
-
-	int32 step_four(TArray<TArray<float>> & matrix,
-					TArray<TArray<int32>> & maskMatrix,
-					TArray<bool> & rowCover, TArray<bool> & colCover,
-					int32 & path_row_0, int32 & path_col_0);
-
-	void find_a_zero(TArray<TArray<float>> & matrix,
-					 TArray<bool> & rowCover, TArray<bool> & colCover,
-					 int32 & row, int32 & col);
-
-	bool star_in_row(TArray<TArray<int32>> & maskMatrix, int32 row);
-
-	void find_star_in_row(TArray<TArray<int32>> & maskMatrix, int32 row, int32 & col);
-
-	int32 step_five(TArray<TArray<int32>> & maskMatrix,
-					TArray<bool> & rowCover, TArray<bool> & colCover,
-					int32 & path_row_0, int32 & path_col_0);
-
-	void find_star_in_col(TArray<TArray<int32>> & maskMatrix,
-						  int32 & row, int32 col);
-
-	void find_prime_in_row(TArray<TArray<int32>> & maskMatrix,
-						   int32 row, int32 & col);
-
-	void augment_path(TArray<TArray<int32>> & maskMatrix, TArray<FVector2D> & path);
-
-	void clear_covers(TArray<bool> & rowCover, TArray<bool> & colCover);
-
-	void erase_primes(TArray<TArray<int32>> & maskMatrix);
-
-	int32 step_six(TArray<TArray<float>> & matrix,
-				   TArray<bool> & rowCover, TArray<bool> & colCover);
-
-	void find_smallest(TArray<TArray<float>> & matrix,
-					   TArray<bool> & rowCover, TArray<bool> & colCover,
-					   float & minVal);
-
-	*/
-	//float getMinRow(TArray<float> row);
-
-	//float getMinCol(TArray<TArray<float>> matrix, int32 column);
-	
+	float costHeuristic(FVector2D agent, FVector2D goal);	
 };
