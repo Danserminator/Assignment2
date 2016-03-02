@@ -20,14 +20,7 @@ private:
 	FVector velocity;
 	float const vMax = 100;
 
-
 public:
-	// Sets default values for this character's properties
-	AKinematicPointController();
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 	

@@ -22,14 +22,7 @@ private:
 	float const maxAngle = 18;
 	bool rotating = true;
 
-
 public:
-	// Sets default values for this character's properties
-	ADifferentialDriveController();
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 

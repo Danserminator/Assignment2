@@ -3,6 +3,7 @@
 #include "Assignment2.h"
 #include "KinematicPointController.h"
 
+<<<<<<< HEAD
 #define OUTPUT
 
 AKinematicPointController::AKinematicPointController()
@@ -14,6 +15,9 @@ void AKinematicPointController::BeginPlay()
 {
 	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
 }
+=======
+//#define OUTPUT
+>>>>>>> origin/master
 
 void AKinematicPointController::Tick(float DeltaSeconds)
 {

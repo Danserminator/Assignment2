@@ -5,6 +5,7 @@
 
 //#define OUTPUT
 
+<<<<<<< HEAD
 ADynamicPointMassController::ADynamicPointMassController()
 {
 	errorTolerance = 0.01;	// Because this is the bomb!
@@ -17,6 +18,8 @@ void ADynamicPointMassController::BeginPlay()
 	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
 }
 
+=======
+>>>>>>> origin/master
 // Called every frame
 void ADynamicPointMassController::Tick(float DeltaTime)
 {
@@ -75,6 +78,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				
 				velocity = velocity.GetClampedToSize(-vMax, vMax);
 
+<<<<<<< HEAD
 				FVector currentLocation = agent->GetActorLocation();
 
 				FVector newLocation = currentLocation + (velocity * deltaSec);
@@ -99,6 +103,9 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 					acceleration = getAcceleration();
 
 					drawLine(2 * acceleration, accelerationColor);
+=======
+			FVector currentLocation = agent->GetActorLocation();
+>>>>>>> origin/master
 
 					float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
@@ -174,7 +181,6 @@ FVector ADynamicPointMassController::getAcceleration() const
 
 	float distLeftLength = (target - to2D(agent->GetActorLocation())).Size() - safetyBuffer;
 	//float distLeftLength = UKismetMathLibrary::VSize(to3D(target) - to3D(to2D(agent->GetActorLocation()))) - safetyBuffer;
-
 
 	if (velocityLength >= distLeftLength) {
 		// Check if we should start breaking

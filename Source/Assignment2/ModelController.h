@@ -47,7 +47,6 @@ protected:
 	FColor searchColor = FColor::Magenta;		// Color of line representing target when searching for more agents
 	FColor radiusColor = FColor(0, 200, 0);		// Color of the circle representing radius
 
-
 	bool followPath = false;
 	bool movingFormation = false;
 	bool everybodyKnows = false;
@@ -59,7 +58,7 @@ protected:
 
 public:
 	// Called when the game starts or when spawned
-	//virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
