@@ -32,8 +32,6 @@ void AKinematicCarController::rotate()
 
 	tarRot = tarRot - curRot;
 
-	// TODO: Pröva om det gör skillnad att * deltaSec på maxAngle istället för clamped rotaton
-
 	float clampedRotation = UKismetMathLibrary::ClampAngle(tarRot, -maxAngle, maxAngle);
 
 	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();

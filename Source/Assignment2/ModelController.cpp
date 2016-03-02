@@ -5,7 +5,6 @@
 
 //#define OUTPUT
 
-/*
 void AModelController::BeginPlay()
 {
 	agent = static_cast<AAgent *>(GetPawn());	// Check if can be set in constructor.
@@ -14,7 +13,6 @@ void AModelController::BeginPlay()
 	formation = agent->formation;
 	unseenAgents = agent->unseenAgents;
 }
-*/
 
 // Called every frame
 void AModelController::Tick(float DeltaTime)
@@ -235,11 +233,6 @@ bool AModelController::setTarget()
 	}
 
 	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *agent->GetActorLocation().ToString(), *target.ToString()));
-
-	if (initTarget) {
-		initTarget = false;
-		agent->SetActorRotation(getRotation(agent->GetActorLocation(), target));
-	}
 
 	return reached;
 }

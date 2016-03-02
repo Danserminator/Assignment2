@@ -34,7 +34,6 @@ protected:
 	int32 waypointsIndex = 0;
 
 	float R;
-	bool initTarget = true;						// So the agent can rotate towards its first target
 	FVector2D target;
 	int32 formationPosition;
 	//bool movingFormation = false;
@@ -59,7 +58,7 @@ protected:
 
 public:
 	// Called when the game starts or when spawned
-	//virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
