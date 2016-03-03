@@ -24,6 +24,7 @@ class ASSIGNMENT2_API AMapGenerator : public ALevelScriptActor
 	const FString obstacleFile = "obstacles.txt";				// Name of file that contains obstacles
 	const FString positionsFile = "positions.txt";				// Name of file that contains agent positions
 	const FString customersFile = "customers.txt";				// Name of file that contains customer positions
+	const FString goalsFile = "goalPositions.txt";				// Name of file that contains goal positions
 
 	const float gridSize = 1;									// Scalar value for generated map
 
@@ -39,6 +40,9 @@ class ASSIGNMENT2_API AMapGenerator : public ALevelScriptActor
 
 	UFUNCTION(BlueprintCallable, Category = "Map Generation")
 	void generateCustomers(TArray<FVector2D> & customers);
+
+	UFUNCTION(BlueprintCallable, Category = "Map Generation")
+	void generateGoals(TArray<FVector2D> & goals);
 	
 	private:
 	TArray<TArray<float>> readData(const FString fileName);

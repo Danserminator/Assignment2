@@ -46,6 +46,11 @@ void AModelController::setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> 
 	writeWaypointsToFile("Waypoints.txt");
 }
 
+void AModelController::setGoal(FVector2D goal)
+{
+	target = goal;
+}
+
 FVector2D AModelController::getClosest(TArray<FVector2D> positions, FVector2D position)
 {
 	int32 closestIndex = 0;
@@ -63,11 +68,12 @@ FVector2D AModelController::getClosest(TArray<FVector2D> positions, FVector2D po
 	return positions[closestIndex];
 }
 
-void AModelController::setParameters(AFormation * formation, bool followPath, bool movingFormation)
+void AModelController::setParameters(AFormation * formation, bool followPath, bool movingFormation, bool avoidAgents)
 {
 	this->formation = formation;
 	this->followPath = followPath;
 	this->movingFormation = movingFormation;
+	this->avoidAgents = avoidAgents;
 
 	if (agent->numberUnseenAgents() == 0) {
 		formation->foundAllAgents(agent);	// Tell formation that we have found all agents.
@@ -78,13 +84,13 @@ bool AModelController::updateTarget()
 {
 	if (followPath) {
 		return updateTarget_path();
-
 	} else if (movingFormation) {
 		return updateTarget_moving();
-
-	} else {
+	} else if (!avoidAgents) {
 		return updateTarget_still();
 	}
+
+	return false;		// TODO: true?
 }
 
 bool AModelController::updateTarget_path()
@@ -116,7 +122,6 @@ bool AModelController::updateTarget_moving()
 		// We cannot see all the other agents so move towards the agents we can see.
 		searching = true;
 		target = approachAgents();
-
 	} else {
 		// We know where all the other agents are.
 
@@ -289,6 +294,8 @@ void AModelController::writeWaypointsToFile(const FString fileName)
 	FFileHelper::SaveStringToFile(stored, *projectDir);
 }
 
+
+
 // X = When collision will occur (X <= 0 -> No collision)
 // Y = 0, brake
 // Y != 0, shift right
@@ -325,7 +332,7 @@ FVector2D AModelController::willCollide(AAgent * otherAgent) {
 
 			float xDiff = cA.X - cB.X;		// Distance of agents at collision
 			if (FMath::Abs(xDiff) <= r) {	// If less than agentRadius, shift agents
-											// TODO: Den här if-satsen lär få göras om
+				// TODO: Den här if-satsen lär få göras om
 
 				result.Y = 1;
 			} else {

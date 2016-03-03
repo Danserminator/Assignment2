@@ -31,5 +31,8 @@ public:
 
 	float getSeeRadius();
 
+	UFUNCTION(BlueprintCallable, Category = "Agent")
+	void setAgentRadius(float agentRadius);
+
 	float getAgentRadius();
 };

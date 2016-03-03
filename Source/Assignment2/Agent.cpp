@@ -72,6 +72,11 @@ float AAgent::getSeeRadius()
 	return seeRadius;
 }
 
+void AAgent::setAgentRadius(float agentRadius)
+{
+	agentRadius = agentRadius;
+}
+
 float AAgent::getAgentRadius() {
 	return agentRadius;
 }

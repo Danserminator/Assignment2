@@ -104,7 +104,7 @@ void AMapGenerator::generateFormation(float d, TArray<FVector2D> & positions)
 
 void AMapGenerator::generateCustomers(TArray<FVector2D> & customers)
 {
-	// Get Agent blueprint
+	// Get Customer blueprint
 	auto cls = StaticLoadObject(UObject::StaticClass(), nullptr,
 		TEXT("Blueprint'/Game/TopDownCPP/Blueprints/Customer.Customer'"));
 	UBlueprint * bp = Cast<UBlueprint>(cls);
@@ -122,6 +122,26 @@ void AMapGenerator::generateCustomers(TArray<FVector2D> & customers)
 		customers.Add(FVector2D(location.X, location.Y));
 
 		customersPositions.Add(FVector2D(locations[c][0], locations[c][1]));
+	}
+}
+
+void AMapGenerator::generateGoals(TArray<FVector2D> & goals) {
+	// Get Customer blueprint
+	auto cls = StaticLoadObject(UObject::StaticClass(), nullptr,
+								TEXT("Blueprint'/Game/TopDownCPP/Blueprints/Customer.Customer'"));
+	UBlueprint * bp = Cast<UBlueprint>(cls);
+	TSubclassOf<class UObject> customerBP = (UClass*)bp->GeneratedClass;
+
+	// Read positions of goals
+	TArray<TArray<float>> goalPos = readData(goalsFile);
+
+	// Spawn goals
+	for (int32 c = 0; c < goalPos.Num(); c++) {
+		FVector2D goal = FVector2D(goalPos[c][0], goalPos[c][1]);
+
+		GWorld->GetWorld()->SpawnActor<ACustomer>(customerBP, FVector(goal, 0), FRotator(0, 0, 0));
+
+		goals.Add(goal);
 	}
 }
 

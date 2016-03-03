@@ -49,6 +49,7 @@ protected:
 
 	bool followPath = false;
 	bool movingFormation = false;
+	bool avoidAgents = false;
 	bool everybodyKnows = false;
 
 	bool searching = false;						// Whether the agent is searching for nearby actors or not
@@ -69,7 +70,10 @@ public:
 	virtual void setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> customers);
 
 	UFUNCTION(BlueprintCallable, Category = "Model Controller")
-		void setParameters(AFormation * formation, bool followPath, bool movingFormation);
+	virtual void setGoal(FVector2D goal);
+
+	UFUNCTION(BlueprintCallable, Category = "Model Controller")
+	void setParameters(AFormation * formation, bool followPath, bool movingFormation, bool avoidObstacles);
 
 	FVector2D getClosest(TArray<FVector2D> positions, FVector2D position);
 
