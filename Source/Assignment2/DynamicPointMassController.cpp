@@ -16,6 +16,8 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (play) {
+		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
+
 		if (!movingFormation) {
 			updateTarget();
 
@@ -23,13 +25,9 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				// TODO
 			}
 			else {
-				acceleration = getAcceleration();
+				acceleration = getAcceleration(deltaSec);
 
 				drawLine(2 * acceleration, accelerationColor);
-
-				float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
-
-				acceleration *= deltaSec;
 
 				velocity += acceleration;
 
@@ -39,8 +37,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				else {
 					velocity = velocity.GetClampedToSize(-vMax, vMax);
 				}
-
-
 
 				FVector currentLocation = agent->GetActorLocation();
 
@@ -56,13 +52,9 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 			if (moveTarget || agent->numberUnseenAgents() > 0) {
 				updateTarget();
 
-				acceleration = getAcceleration();
+				acceleration = getAcceleration(deltaSec);
 
 				drawLine(2 * acceleration, accelerationColor);
-
-				float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
-
-				acceleration *= deltaSec;
 
 				velocity += acceleration;
 				
@@ -89,11 +81,9 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 					moveTarget = true;
 				}
 				else {
-					acceleration = getAcceleration();
+					acceleration = getAcceleration(deltaSec);
 
 					drawLine(2 * acceleration, accelerationColor);
-
-					float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
 					acceleration *= deltaSec;
 
@@ -114,24 +104,12 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 	}
 }
 
-FVector2D ADynamicPointMassController::getBrakeTarget()
-{
-	FVector2D normVelocity = to2D(velocity);
-	normVelocity.Normalize();
-
-	if (to2D(velocity) < normVelocity) {
-		normVelocity = to2D(velocity);
-	}
-
-	return (to2D(agent->GetActorLocation()) + normVelocity + (errorTolerance * 0.9));
-}
-
 bool ADynamicPointMassController::waypointReached()
 {
 	if (AModelController::waypointReached()) {
 		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
-		FVector2D frameAcceleration = to2D(getAcceleration()) * deltaSec;
+		FVector2D frameAcceleration = to2D(getAcceleration(deltaSec));
 
 		FVector2D frameVelocity = to2D(velocity) * deltaSec;
 
@@ -148,17 +126,17 @@ bool ADynamicPointMassController::waypointReached()
 	return false;
 }
 
-FVector ADynamicPointMassController::getAcceleration() const
+FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 {
 	FVector newAcceleration;
 
 	float rotation = getRotation(agent->GetActorLocation(), target).Yaw;
 
-	newAcceleration = FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
+	newAcceleration = deltaSec * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
 
 	newAcceleration = aMax * newAcceleration / mass;
 
-	float velocityLength = UKismetMathLibrary::VSize(velocity);
+	float velocityLength = to2D(velocity).Size();
 
 	velocityLength = velocityLength * velocityLength / (aMax * 2);
 
@@ -179,6 +157,18 @@ FVector ADynamicPointMassController::getAcceleration() const
 	}
 	
 	return newAcceleration;
+}
+
+FVector2D ADynamicPointMassController::getBrakeTarget()
+{
+	FVector2D normVelocity = to2D(velocity);
+	normVelocity.Normalize();
+
+	if (to2D(velocity) < normVelocity) {
+		normVelocity = to2D(velocity);
+	}
+
+	return (to2D(agent->GetActorLocation()) + normVelocity + (errorTolerance * 0.9));
 }
 
 bool ADynamicPointMassController::updateTarget_moving()

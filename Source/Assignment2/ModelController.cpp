@@ -247,7 +247,6 @@ void AModelController::setRotation()
 	FVector normVelocity = velocity;
 	normVelocity.Normalize();
 
-	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Rotation: %s"), *velocity.ToString()));
 	float yaw = UKismetMathLibrary::DegAtan2(normVelocity.Y, normVelocity.X);
 
 	agent->SetActorRotation(FRotator(0, yaw, 0));

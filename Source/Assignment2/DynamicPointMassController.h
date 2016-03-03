@@ -37,11 +37,11 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	virtual FVector2D getBrakeTarget() override;
-
 	virtual bool waypointReached() override;
 
-	virtual FVector getAcceleration() const;
+	virtual FVector getAcceleration(float deltaSec) const;
+
+	virtual FVector2D getBrakeTarget() override;
 
 	virtual bool updateTarget_moving();
 };
