@@ -68,11 +68,14 @@ void AModelController::setParameters(AFormation * formation, bool followPath, bo
 	this->formation = formation;
 	this->followPath = followPath;
 	this->movingFormation = movingFormation;
+
+	if (agent->numberUnseenAgents() == 0) {
+		formation->foundAllAgents(agent);	// Tell formation that we have found all agents.
+	}
 }
 
 bool AModelController::updateTarget()
 {
-
 	if (followPath) {
 		return updateTarget_path();
 
