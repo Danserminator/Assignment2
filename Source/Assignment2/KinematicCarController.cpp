@@ -41,13 +41,13 @@ void AKinematicCarController::rotate(float deltaSec)
 
 	clampedRotation *= deltaSec;
 
-	clampedRotation = FMath::DegreesToRadians(clampedRotation);
-
-	float angle = UKismetMathLibrary::Tan(clampedRotation);
+	float angle = UKismetMathLibrary::DegTan(clampedRotation);
 
 	angle *= (vMax / L);
 
-	angle = FMath::RadiansToDegrees(angle) + curRot;
+	angle = UKismetMathLibrary::RadiansToDegrees(angle);
+
+	angle += curRot;
 
 	agent->SetActorRotation(FRotator(0, angle, 0));
 

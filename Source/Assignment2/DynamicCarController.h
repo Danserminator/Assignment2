@@ -26,20 +26,20 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	virtual FVector getAcceleration();
+	virtual FVector getAcceleration(float deltaSec);
 
-	virtual float getRotation();
+	virtual float rotateVelocity(float deltaSec);
 
-	virtual float getXAcceleration(float angle);
+	virtual float getXAcceleration(float angle, float deltaSec);
 
-	virtual float getYAcceleration(float angle);
+	virtual float getYAcceleration(float angle, float deltaSec);
 
-	virtual FVector getVelocity();
+	virtual FVector getVelocity(float deltaSec);
 
-	virtual void rotate();
+	virtual float rotate(float deltaSec);
 
-	virtual float getXVelocity();
+	virtual float getXVelocity(float deltaSec);
 
-	virtual float getYVelocity();
+	virtual float getYVelocity(float deltaSec);
 	
 };

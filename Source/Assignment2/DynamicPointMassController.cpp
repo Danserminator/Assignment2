@@ -52,7 +52,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				//agent->SetActorLocationAndRotation(newLocation, rotation);
 			}
 		} else {
-			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("%s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
+			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("%s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
 			if (moveTarget || agent->numberUnseenAgents() > 0) {
 				updateTarget();
 
@@ -128,22 +128,19 @@ FVector2D ADynamicPointMassController::getBrakeTarget()
 
 bool ADynamicPointMassController::waypointReached()
 {
-	bool stoppedPre = stopped;
 	if (AModelController::waypointReached()) {
-		stopped = stoppedPre;
 		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
 		FVector2D frameAcceleration = to2D(getAcceleration()) * deltaSec;
 
 		FVector2D frameVelocity = to2D(velocity) * deltaSec;
 
-		if (FMath::Abs(frameVelocity.X) > FMath::Abs(frameAcceleration.X) || FMath::Abs(frameVelocity.Y) > FMath::Abs(frameAcceleration.Y)) {
+		if (UKismetMathLibrary::Abs(frameVelocity.X) > UKismetMathLibrary::Abs(frameAcceleration.X) || UKismetMathLibrary::Abs(frameVelocity.Y) > UKismetMathLibrary::Abs(frameAcceleration.Y)) {
 			// Too high velocity for us to stop in this time frame.
 			return false;
 		} else {
 			// Can stop in this time frame.
 			velocity = FVector(0, 0, 0);
-			stopped = true;
 			return true;
 		}
 	}

@@ -6,6 +6,11 @@
 
 #define OUTPUT
 
+AKinematicPointController::AKinematicPointController()
+{
+	errorTolerance = 0.001;
+}
+
 void AKinematicPointController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -15,9 +20,10 @@ void AKinematicPointController::Tick(float DeltaSeconds)
 
 		if (waypointReached()) {
 			// TODO
-		}
-		else {
-			velocity = getVelocity();
+		} else {
+			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
+
+			velocity = getVelocity(deltaSec);
 
 			FVector currentLocation = agent->GetActorLocation();
 
@@ -31,24 +37,20 @@ void AKinematicPointController::Tick(float DeltaSeconds)
 	}
 }
 
-FVector AKinematicPointController::getVelocity() const
+FVector AKinematicPointController::getVelocity(float deltaSec) const
 {
 	FVector newVelocity;
 
 	float rotation = getRotation(agent->GetActorLocation(), target).Yaw;
 
-	newVelocity = vMax * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
+	newVelocity = deltaSec * vMax * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
 
 	FVector2D remainingDistance = target - to2D(agent->GetActorLocation());
-	remainingDistance.X = FMath::Abs(remainingDistance.X);
-	remainingDistance.Y = FMath::Abs(remainingDistance.Y);
+	remainingDistance.X = UKismetMathLibrary::Abs(remainingDistance.X);
+	remainingDistance.Y = UKismetMathLibrary::Abs(remainingDistance.Y);
 
-	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
-
-	newVelocity *= deltaSec;
-
-	newVelocity.X = FMath::Clamp(newVelocity.X, -remainingDistance.X, remainingDistance.X);
-	newVelocity.Y = FMath::Clamp(newVelocity.Y, -remainingDistance.Y, remainingDistance.Y);
+	newVelocity.X = UKismetMathLibrary::FClamp(newVelocity.X, -remainingDistance.X, remainingDistance.X);
+	newVelocity.Y = UKismetMathLibrary::FClamp(newVelocity.Y, -remainingDistance.Y, remainingDistance.Y);
 
 	return newVelocity;
 }

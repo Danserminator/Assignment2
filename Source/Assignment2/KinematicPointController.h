@@ -17,13 +17,14 @@ class ASSIGNMENT2_API AKinematicPointController : public AModelController
 	GENERATED_BODY()
 	
 private:
-	FVector velocity;
 	float const vMax = 100;
 
 public:
+	AKinematicPointController();
+
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 	
 private:
-	virtual FVector getVelocity() const;
+	virtual FVector getVelocity(float deltaSec) const;
 };

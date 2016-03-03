@@ -89,7 +89,7 @@ bool AModelController::updateTarget_path()
 	// The agent is following a predetermined path.
 	everybodyKnows = true;
 
-	bool reached = AModelController::waypointReached() && velocity.Size() == 0;		// Check if it is at the target and is standing still
+	bool reached = waypointReached(); // && velocity.Size() == 0;		// Check if it is at the target and is standing still
 	if (reached) {
 		waypointsIndex++;
 	}
@@ -247,6 +247,7 @@ void AModelController::setRotation()
 	FVector normVelocity = velocity;
 	normVelocity.Normalize();
 
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Rotation: %s"), *velocity.ToString()));
 	float yaw = UKismetMathLibrary::DegAtan2(normVelocity.Y, normVelocity.X);
 
 	agent->SetActorRotation(FRotator(0, yaw, 0));

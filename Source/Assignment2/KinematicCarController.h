@@ -15,7 +15,7 @@ class ASSIGNMENT2_API AKinematicCarController : public AModelController
 	
 protected:
 	float const vMax = 10;
-	float const maxAngle = 18;
+	float const maxAngle = 57.2957795;
 	float const L = 1;
 
 public:

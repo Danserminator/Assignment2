@@ -17,21 +17,22 @@ class ASSIGNMENT2_API ADifferentialDriveController : public AModelController
 	GENERATED_BODY()
 	
 private:
-	FVector velocity;
-	float const vMax = 1;
+	float const vMax = 10;
 	float const maxAngle = 18;
 	bool rotating = true;
 
 public:
+	ADifferentialDriveController();
+
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	virtual bool rotate();
+	virtual bool rotate(float deltaSec);
 
-	virtual FVector getVelocity();	
+	virtual FVector getVelocity(float deltaSec);
 
-	virtual float getXVelocity(float hyp) const;
+	virtual float getXVelocity(float deltaSec) const;
 
-	virtual float getYVelocity(float hyp) const;
+	virtual float getYVelocity(float deltaSec) const;
 };

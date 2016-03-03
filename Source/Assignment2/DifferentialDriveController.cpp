@@ -5,6 +5,11 @@
 
 #define OUTPUT
 
+ADifferentialDriveController::ADifferentialDriveController()
+{
+	float errorTolerance = 0.001;
+}
+
 void ADifferentialDriveController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -14,12 +19,13 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 
 		if (waypointReached()) {
 			// TODO
-		}
-		else {
+		} else {
+			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
+
 			if (rotating) {
-				rotating = !rotate();
+				rotating = !rotate(deltaSec);
 			} else {
-				velocity = getVelocity();
+				velocity = getVelocity(deltaSec);
 
 				FVector currentLocation = agent->GetActorLocation();
 
@@ -31,61 +37,50 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 	}
 }
 
-bool ADifferentialDriveController::rotate()
+bool ADifferentialDriveController::rotate(float deltaSec)
 {
 	float rotation = getRotation(agent->GetActorLocation(), target).Yaw;
 
-	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
+	rotation -= agent->GetActorRotation().Yaw;
 
 	float currentMaxAngle = maxAngle * deltaSec;
 
-	float clampedRotation = UKismetMathLibrary::ClampAngle(rotation, agent->GetActorRotation().Yaw - currentMaxAngle, agent->GetActorRotation().Yaw + currentMaxAngle);
+	float clampedRotation = UKismetMathLibrary::ClampAngle(rotation, -currentMaxAngle, currentMaxAngle);
 
-	agent->SetActorRotation(FRotator(0, clampedRotation, 0));
+	agent->SetActorRotation(FRotator(0, agent->GetActorRotation().Yaw + clampedRotation, 0));
 
-	if (abs(rotation - clampedRotation) < 0.0001) {
-		return true;
-	}
-
-	return false;
+	return abs(rotation - clampedRotation) < 0.0001;
 }
 
-FVector ADifferentialDriveController::getVelocity()
+FVector ADifferentialDriveController::getVelocity(float deltaSec)
 {
 	FVector newVelocity(0, 0, 0);
 
-	rotate();
+	if (!rotate(deltaSec)) {
+		rotating = true;
+		return FVector(0, 0, 0);	// Still need to turn
+	}
 
-	float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
+	newVelocity.X = getXVelocity(deltaSec);
 
-	float hyp = deltaSec * vMax;
-
-	newVelocity.X = getXVelocity(hyp);
-
-	newVelocity.Y = getYVelocity(hyp);	
+	newVelocity.Y = getYVelocity(deltaSec);
 
 	FVector2D remainingDistance = target - to2D(agent->GetActorLocation());
-	remainingDistance.X = FMath::Abs(remainingDistance.X);
-	remainingDistance.Y = FMath::Abs(remainingDistance.Y);
+	remainingDistance.X = UKismetMathLibrary::Abs(remainingDistance.X);
+	remainingDistance.Y = UKismetMathLibrary::Abs(remainingDistance.Y);
 
-	//float maxSize = newVelocity.Size() * deltaSec;
-
-	//newVelocity.X = 
-
-	//newVelocity = newVelocity.ClampMaxSize(maxSize);
-
-	newVelocity.X = FMath::Clamp(newVelocity.X, -remainingDistance.X, remainingDistance.X);
-	newVelocity.Y = FMath::Clamp(newVelocity.Y, -remainingDistance.Y, remainingDistance.Y);
+	newVelocity.X = UKismetMathLibrary::FClamp(newVelocity.X, -remainingDistance.X, remainingDistance.X);
+	newVelocity.Y = UKismetMathLibrary::FClamp(newVelocity.Y, -remainingDistance.Y, remainingDistance.Y);
 
 	return newVelocity;
 }
 
-float ADifferentialDriveController::getXVelocity(float hyp) const
+float ADifferentialDriveController::getXVelocity(float deltaSec) const
 {
-	return hyp * UKismetMathLibrary::DegCos(agent->GetActorRotation().Yaw);
+	return deltaSec * vMax * UKismetMathLibrary::DegCos(agent->GetActorRotation().Yaw);
 }
 
-float ADifferentialDriveController::getYVelocity(float hyp) const
+float ADifferentialDriveController::getYVelocity(float deltaSec) const
 {
-	return hyp * UKismetMathLibrary::DegSin(agent->GetActorRotation().Yaw);
+	return deltaSec * vMax * UKismetMathLibrary::DegSin(agent->GetActorRotation().Yaw);
 }
