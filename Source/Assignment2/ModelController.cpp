@@ -17,6 +17,12 @@ void AModelController::Tick(float DeltaTime)
 
 	drawLine(2 * velocity, velocityColor);
 
+	if (avoidAgents) {
+		FVector loc = FVector(agent->GetActorLocation().X, agent->GetActorLocation().Y, 0);
+		DrawDebugCircle(GWorld->GetWorld(), loc, agent->getAgentRadius(), radiusSegments, radiusColor,
+						false, 0.1, 0, 1, FVector(0, 1, 0), FVector(1, 0, 0), false);
+	}
+
 	if (searching) {
 		if (stopped) {
 			DrawDebugCircle(GWorld->GetWorld(), agent->GetActorLocation(), agent->getSeeRadius(), radiusSegments, radiusColor,
