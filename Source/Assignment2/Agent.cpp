@@ -12,7 +12,7 @@ AAgent::AAgent()
 
 }
 
-void AAgent::init(float r, TArray<AAgent *> agents)
+void AAgent::init(TArray<AAgent *> agents, float r)
 {
 	seeRadius = r;
 

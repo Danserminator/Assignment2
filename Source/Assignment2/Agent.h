@@ -19,7 +19,7 @@ public:
 	AAgent();
 
 	UFUNCTION(BlueprintCallable, Category = "Agent")
-	void init(float r, TArray<AAgent *> agents);
+	void init(TArray<AAgent *> agents, float r = 0);
 
 	void findAgents();
 
