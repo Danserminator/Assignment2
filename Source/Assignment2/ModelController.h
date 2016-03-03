@@ -88,11 +88,11 @@ protected:
 
 	virtual bool waypointReached();
 
-	virtual FRotator getRotation(FVector start, FVector2D target) const {
-		return getRotation(start, FVector(target, 0));
+	virtual float getRotation(FVector start, FVector2D target) const {
+		return getRotation(start, to3D(target));
 	}
 
-	virtual FRotator getRotation(FVector start, FVector target) const;
+	virtual float getRotation(FVector start, FVector target) const;
 
 	virtual void setRotation();
 

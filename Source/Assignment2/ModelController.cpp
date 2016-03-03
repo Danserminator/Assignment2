@@ -126,10 +126,12 @@ bool AModelController::updateTarget_moving()
 			// At least one of the other agents do not know where everybody else are.
 			// I will move towards all the other agents.
 			target = approachAgents();
+
+			return false;
 		}
 	}
 
-	return target.Equals(oldTarget, 0.001);
+	return true;
 }
 
 bool AModelController::updateTarget_still()
@@ -162,8 +164,7 @@ bool AModelController::updateTarget_still()
 
 			if (AModelController::waypointReached() && velocity.Size() < 0.2) {
 
-			}
-			else {
+			} else {
 
 				// Check if I am moving towards the target right now, else stop.
 				if (!isMovingTowardsTarget(target)) {
@@ -173,16 +174,17 @@ bool AModelController::updateTarget_still()
 				}
 			}
 
-		}
-		catch (std::exception e) {
+		} catch (std::exception e) {
 			// At least one of the other agents do not know where everybody else are.
 			// I will move towards all the other agents.
 			target = approachAgents();
 			everybodyKnows = false;
+
+			return false;
 		}
 	}
 
-	return target.Equals(oldTarget, 0.001);
+	return true;
 }
 
 bool AModelController::isMovingTowardsTarget(FVector2D target)
@@ -237,9 +239,9 @@ bool AModelController::waypointReached()
 	return reached;
 }
 
-FRotator AModelController::getRotation(FVector start, FVector target) const
+float AModelController::getRotation(FVector start, FVector target) const
 {
-	return FRotator(0, UKismetMathLibrary::FindLookAtRotation(start, target).Yaw, 0);
+	return UKismetMathLibrary::FindLookAtRotation(start, target).Yaw;
 }
 
 void AModelController::setRotation()

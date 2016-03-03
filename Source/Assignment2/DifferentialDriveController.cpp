@@ -39,7 +39,7 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 
 bool ADifferentialDriveController::rotate(float deltaSec)
 {
-	float rotation = getRotation(agent->GetActorLocation(), target).Yaw;
+	float rotation = getRotation(agent->GetActorLocation(), target);
 
 	rotation -= agent->GetActorRotation().Yaw;
 

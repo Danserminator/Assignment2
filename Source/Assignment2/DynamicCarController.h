@@ -17,29 +17,26 @@ private:
 	FVector acceleration;
 	float const aMax = 1;
 	float const vMax = 10;
-	float const maxAngle = 18;
+	float const maxAngle = 57.2957795;
 	float const L = 1;
 	float const safetyBuffer = 0.1;
 
+	float v = 0;
+
+	bool first = true;
+
 public:
+	ADynamicCarController();
+
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
-private:
-	virtual FVector getAcceleration(float deltaSec);
-
-	virtual float rotateVelocity(float deltaSec);
-
-	virtual float getXAcceleration(float angle, float deltaSec);
-
-	virtual float getYAcceleration(float angle, float deltaSec);
-
-	virtual FVector getVelocity(float deltaSec);
-
-	virtual float rotate(float deltaSec);
-
-	virtual float getXVelocity(float deltaSec);
-
-	virtual float getYVelocity(float deltaSec);
 	
+
+private:
+	virtual bool waypointReached() override;
+
+	virtual float getAcceleration(float deltaSec) const;
+
+	virtual float rotate(float deltaSec) const;
 };

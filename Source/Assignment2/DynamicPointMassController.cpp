@@ -130,7 +130,7 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 {
 	FVector newAcceleration;
 
-	float rotation = getRotation(agent->GetActorLocation(), target).Yaw;
+	float rotation = getRotation(agent->GetActorLocation(), target);
 
 	newAcceleration = deltaSec * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
 

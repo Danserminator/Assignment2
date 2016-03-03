@@ -31,7 +31,7 @@ void AKinematicCarController::Tick(float DeltaSeconds)
 
 void AKinematicCarController::rotate(float deltaSec)
 {
-	float tarRot = getRotation(agent->GetActorLocation(), target).Yaw;	// Target rotation
+	float tarRot = getRotation(agent->GetActorLocation(), target);	// Target rotation
 
 	float curRot = agent->GetActorRotation().Yaw;						// Current rotation
 

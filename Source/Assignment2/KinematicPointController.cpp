@@ -41,7 +41,7 @@ FVector AKinematicPointController::getVelocity(float deltaSec) const
 {
 	FVector newVelocity;
 
-	float rotation = getRotation(agent->GetActorLocation(), target).Yaw;
+	float rotation = getRotation(agent->GetActorLocation(), target);
 
 	newVelocity = deltaSec * vMax * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
 

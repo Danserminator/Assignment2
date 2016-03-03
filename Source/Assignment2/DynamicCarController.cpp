@@ -3,47 +3,84 @@
 #include "Assignment2.h"
 #include "DynamicCarController.h"
 
+ADynamicCarController::ADynamicCarController()
+{
+	errorTolerance = 0.1;
+}
+
 void ADynamicCarController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
 	if (play) {
-		updateTarget();
+		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
+		if (updateTarget()) {
+			// For T1 & T2
+			if (first) {
+				first = false;
+				FRotator rotation = agent->GetActorRotation();
+				rotation.Yaw = getRotation(agent->GetActorLocation(), target);
+				agent->SetActorRotation(rotation);
+			}
+		}
 
 		if (waypointReached()) {
 			// TODO
 		} else {
 			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
-			acceleration = getAcceleration(deltaSec);
+			float a = getAcceleration(deltaSec);
 
-			drawLine(2 * acceleration, accelerationColor);
+			v += a;
 
-			velocity += acceleration;
+			v = UKismetMathLibrary::FClamp(v, -vMax, vMax);
 
-			velocity = velocity.GetClampedToSize(-vMax, vMax);
+			float rotation = rotate(deltaSec);
 
-			FVector FrameVelocity = getVelocity(deltaSec);
+			acceleration.X = a * UKismetMathLibrary::DegCos(rotation);
+			acceleration.Y = a * UKismetMathLibrary::DegSin(rotation);
 
-			agent->SetActorLocation(agent->GetActorLocation() + FrameVelocity);
+			drawLine(2 * acceleration / deltaSec, accelerationColor);
+
+			velocity.X = v * UKismetMathLibrary::DegCos(rotation);
+			velocity.Y = v * UKismetMathLibrary::DegSin(rotation);
+
+			setRotation();
+
+			agent->SetActorLocation(agent->GetActorLocation() + (velocity * deltaSec));
 		}
 	}
 }
 
-FVector ADynamicCarController::getAcceleration(float deltaSec)
+bool ADynamicCarController::waypointReached()
 {
-	float angle = rotate(deltaSec);
+	if (AModelController::waypointReached()) {
+		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
-	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Angle: %s"), *FString::SanitizeFloat(angle)));
+		float frameAcceleration = getAcceleration(deltaSec);
 
-	FVector newAcceleration(0, 0, 0);
+		float frameVelocity = v * deltaSec;
 
-	newAcceleration.X = getXAcceleration(angle, deltaSec);
-	newAcceleration.Y = getYAcceleration(angle, deltaSec);
+		if (UKismetMathLibrary::Abs(frameVelocity) > UKismetMathLibrary::Abs(frameAcceleration)) {
+			// Too high velocity for us to stop in this time frame.
+			return false;
+		}
+		else {
+			// Can stop in this time frame.
+			velocity = FVector(0, 0, 0);
+			v = 0;
+			return true;
+		}
+	}
 
-	//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Angle: %s"), *newAcceleration.ToString()));
+	return false;
+}
 
-	float velocityLength = to2D(velocity).Size(); // UKismetMathLibrary::VSize(velocity);
+float ADynamicCarController::getAcceleration(float deltaSec) const
+{
+	float a = aMax * deltaSec;
+
+	float velocityLength = to2D(velocity).Size();
 
 	velocityLength = velocityLength * velocityLength / (aMax * 2);
 
@@ -58,87 +95,28 @@ FVector ADynamicCarController::getAcceleration(float deltaSec)
 		normDistLeft.Normalize();
 
 		if (normVelocity.Equals(normDistLeft, 0.1)) {
-			return -newAcceleration;
+			return -a;
 		}
 	}
 
-	return newAcceleration;
+	return a;
 }
 
-float ADynamicCarController::rotate(float deltaSec)
+float ADynamicCarController::rotate(float deltaSec) const
 {
-	float rotation = AModelController::getRotation(agent->GetActorLocation(), target).Yaw;
+	float rotation = AModelController::getRotation(agent->GetActorLocation(), target);
 
 	rotation -= agent->GetActorRotation().Yaw;
 
 	float curMaxAngle = deltaSec * maxAngle;					// Max angle for this tick
 
-	rotation = UKismetMathLibrary::ClampAngle(rotation, -curMaxAngle, curMaxAngle);
+	rotation = UKismetMathLibrary::ClampAngle(rotation, -maxAngle, maxAngle);
 
 	rotation = UKismetMathLibrary::DegTan(rotation);
 
-	rotation *= (aMax / L);
-
-	rotation = UKismetMathLibrary::RadiansToDegrees(rotation);
+	rotation *= v / L;
 
 	rotation += agent->GetActorRotation().Yaw;
 
-	//agent->SetActorRotation(FRotator(0, rotation, 0));
-
 	return rotation;
-}
-
-float ADynamicCarController::getXAcceleration(float angle, float deltaSec)
-{
-	return deltaSec * aMax * UKismetMathLibrary::DegCos(angle);
-}
-
-float ADynamicCarController::getYAcceleration(float angle, float deltaSec)
-{
-	return deltaSec * aMax * UKismetMathLibrary::DegSin(angle);
-}
-
-FVector ADynamicCarController::getVelocity(float deltaSec)
-{
-	rotateVelocity(deltaSec);
-
-	FVector newVelocity(0, 0, 0);
-
-	newVelocity.X = getXVelocity(deltaSec);
-	newVelocity.Y = getYVelocity(deltaSec);
-
-	return newVelocity;
-}
-
-float ADynamicCarController::rotateVelocity(float deltaSec)
-{
-	float rotation = AModelController::getRotation(agent->GetActorLocation(), target).Yaw;
-
-	rotation -= agent->GetActorRotation().Yaw;
-
-	float curMaxAngle = deltaSec * maxAngle;					// Max angle for this tick
-
-	rotation = UKismetMathLibrary::ClampAngle(rotation, -curMaxAngle, curMaxAngle);
-
-	rotation = UKismetMathLibrary::DegTan(rotation);
-
-	rotation *= (to2D(velocity).Size() / L);
-
-	rotation = UKismetMathLibrary::RadiansToDegrees(rotation);
-
-	rotation += agent->GetActorRotation().Yaw;
-
-	agent->SetActorRotation(FRotator(0, rotation, 0));
-
-	return rotation;
-}
-
-float ADynamicCarController::getXVelocity(float deltaSec)
-{
-	return deltaSec * to2D(velocity).Size() * UKismetMathLibrary::DegCos(agent->GetActorRotation().Yaw);
-}
-
-float ADynamicCarController::getYVelocity(float deltaSec)
-{
-	return deltaSec * to2D(velocity).Size() * UKismetMathLibrary::DegSin(agent->GetActorRotation().Yaw);
 }
