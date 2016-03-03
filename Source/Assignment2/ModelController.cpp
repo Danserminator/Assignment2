@@ -90,7 +90,7 @@ bool AModelController::updateTarget()
 		return updateTarget_still();
 	}
 
-	return false;		// TODO: true?
+	return false;
 }
 
 bool AModelController::updateTarget_path()

@@ -137,7 +137,7 @@ void AMapGenerator::generateGoals(TArray<FVector2D> & goals) {
 
 	// Spawn goals
 	for (int32 c = 0; c < goalPos.Num(); c++) {
-		FVector2D goal = FVector2D(goalPos[c][0], goalPos[c][1]);
+		FVector2D goal = gridToLocation(goalPos[c][0], goalPos[c][1]);
 
 		GWorld->GetWorld()->SpawnActor<ACustomer>(customerBP, FVector(goal, 0), FRotator(0, 0, 0));
 
