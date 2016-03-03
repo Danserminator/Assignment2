@@ -203,7 +203,7 @@ bool AModelController::isMovingTowardsTarget(FVector2D target)
 
 	shouldBeMovingTowards.Normalize();
 
-	return movingTowards.Equals(shouldBeMovingTowards, 0.1);
+	return movingTowards.Equals(shouldBeMovingTowards, 0.3);
 }
 
 FVector2D AModelController::approachAgents()
