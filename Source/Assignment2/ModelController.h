@@ -56,6 +56,8 @@ protected:
 	float searchSize = 10;						// Size of point representing target when searching for more agents
 	float radiusSegments = 24;					// # of segments in the circle representing radius
 
+	float agentRadiusScalar = 4;				// Scalar from agent radius to obstacle search distance
+
 public:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -99,4 +101,8 @@ protected:
 	virtual void drawLine(FVector line, FColor color) const;
 
 	void writeWaypointsToFile(const FString fileName);
+
+	FVector2D willCollide(AAgent * otherAgent);
+
+	virtual float getSearchDistance();							// Gör denna instant istället en för multiplikation
 };

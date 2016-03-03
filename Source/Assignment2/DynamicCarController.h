@@ -25,13 +25,13 @@ private:
 
 	bool first = true;
 
+	float searchRadiusScalar = 1.5;		// Scalar from brake distance to obstacle search distance
+
 public:
 	ADynamicCarController();
 
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
-
-	
 
 private:
 	virtual bool waypointReached() override;
@@ -39,4 +39,8 @@ private:
 	virtual float getAcceleration(float deltaSec) const;
 
 	virtual float rotate(float deltaSec) const;
+
+	virtual float getBrakeDistance() const;
+
+	virtual float getSearchDistance() override;
 };

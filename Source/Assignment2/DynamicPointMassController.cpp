@@ -136,9 +136,7 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 
 	newAcceleration = aMax * newAcceleration / mass;
 
-	float velocityLength = to2D(velocity).Size();
-
-	velocityLength = velocityLength * velocityLength / (aMax * 2);
+	float velocityLength = getBrakeDistance();
 
 	float distLeftLength = (target - to2D(agent->GetActorLocation())).Size() - safetyBuffer;
 	//float distLeftLength = UKismetMathLibrary::VSize(to3D(target) - to3D(to2D(agent->GetActorLocation()))) - safetyBuffer;
@@ -157,6 +155,15 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 	}
 	
 	return newAcceleration;
+}
+
+float ADynamicPointMassController::getBrakeDistance() const
+{
+	float velocityLength = to2D(velocity).Size();
+
+	velocityLength = velocityLength * velocityLength / (aMax * 2);
+
+	return velocityLength;
 }
 
 FVector2D ADynamicPointMassController::getBrakeTarget()
@@ -209,3 +216,9 @@ bool ADynamicPointMassController::updateTarget_moving()
 
 	return target.Equals(oldTarget, 0.001);
 }
+
+float ADynamicPointMassController::getSearchDistance()
+{
+	return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
+}
+

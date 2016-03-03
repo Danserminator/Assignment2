@@ -286,6 +286,67 @@ void AModelController::writeWaypointsToFile(const FString fileName)
 	FFileHelper::SaveStringToFile(stored, *projectDir);
 }
 
+// X = When collision will occur (X <= 0 -> No collision)
+// Y = 0, brake
+// Y != 0, shift right
+FVector2D AModelController::willCollide(AAgent * otherAgent) {
+	// TODO: Ha Z som "Jag har förträde" istället?
+
+	FVector2D pA = to2D(agent->GetActorLocation());			// Current location of actor
+	FVector2D vA = to2D(velocity);							// Current velocity of actor
+	FVector2D pB = to2D(otherAgent->GetActorLocation());	// Current location of other actor
+
+	AModelController * bController = static_cast<AModelController *>((otherAgent->GetController()));
+	FVector2D vB = to2D(bController->velocity);				// Current velocity of other actor
+
+	FVector2D pAB = pA - pB;
+	FVector2D vAB = vA - vB;
+
+	float a = FVector2D::DotProduct(vAB, vAB);
+	float b = 2 * FVector2D::DotProduct(pAB, vAB);
+	float r = agent->getAgentRadius() + otherAgent->getAgentRadius();
+	float c = FVector2D::DotProduct(pAB, pAB) - (r * r);
+
+	float discriminant = (b * b) - (4 * a * c);
+
+	FVector2D result(0, 0);
+	if (discriminant > 0) {					// Possible collision
+		float t0 = ((-b) - FMath::Sqrt(discriminant)) / (2 * a);
+		float t1 = ((-b) + FMath::Sqrt(discriminant)) / (2 * a);
+
+		float t = FMath::Min(t0, t1);
+
+		if (t > 0) {						// Will collide (t < 0 -> "collision" will happen in the past)
+			FVector2D cA = pA + (t * vA);
+			FVector2D cB = pB + (t * vB);
+
+			float xDiff = cA.X - cB.X;		// Distance of agents at collision
+			if (FMath::Abs(xDiff) <= r) {	// If less than agentRadius, shift agents
+											// TODO: Den här if-satsen lär få göras om
+
+				result.Y = 1;
+			} else {
+				if (pAB.X > 0) {
+					t = -1;					// Rightmost agent keeps going
+				} else if (xDiff > 0) {		// If they currently have the same X-position
+					t = -1;					// Rightmost agent at collision keeps going
+				}
+			}
+		}
+
+		result.X = t;
+	} else {								// No collision
+		result.X = -1;
+	}
+
+	return result;
+}
+
+float AModelController::getSearchDistance()
+{
+	return agentRadiusScalar * agent->getAgentRadius();
+}
+
 /*
 bool AModelController::setTarget()
 {

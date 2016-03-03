@@ -11,7 +11,7 @@ class ASSIGNMENT2_API AAgent : public ACharacter {
 	GENERATED_BODY()
 
 public:
-	float seeRadius;
+	float seeRadius, agentRadius;
 	TArray<AAgent *> unseenAgents;
 	TArray<AAgent *> seenAgents;
 
@@ -30,4 +30,6 @@ public:
 	TArray<AAgent *> getSeenAgents();
 
 	float getSeeRadius();
+
+	float getAgentRadius();
 };

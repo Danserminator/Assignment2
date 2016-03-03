@@ -80,9 +80,7 @@ float ADynamicCarController::getAcceleration(float deltaSec) const
 {
 	float a = aMax * deltaSec;
 
-	float velocityLength = to2D(velocity).Size();
-
-	velocityLength = velocityLength * velocityLength / (aMax * 2);
+	float velocityLength = getBrakeDistance();
 
 	float distLeftLength = (target - to2D(agent->GetActorLocation())).Size() - safetyBuffer;
 
@@ -119,4 +117,18 @@ float ADynamicCarController::rotate(float deltaSec) const
 	rotation += agent->GetActorRotation().Yaw;
 
 	return rotation;
+}
+
+float ADynamicCarController::getBrakeDistance() const
+{
+	float velocityLength = to2D(velocity).Size(); // UKismetMathLibrary::VSize(velocity);
+
+	velocityLength = velocityLength * velocityLength / (aMax * 2);
+
+	return velocityLength;
+}
+
+float ADynamicCarController::getSearchDistance()
+{
+	return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
 }

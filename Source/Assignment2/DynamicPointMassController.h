@@ -30,6 +30,8 @@ private:
 	bool firstTry = true;
 	bool secondTry = true;
 
+	float searchRadiusScalar = 1.5;		// Scalar from brake distance to obstacle search distance
+
 public:
 	ADynamicPointMassController();
 
@@ -41,7 +43,11 @@ private:
 
 	virtual FVector getAcceleration(float deltaSec) const;
 
+	virtual float getBrakeDistance() const;
+
 	virtual FVector2D getBrakeTarget() override;
 
 	virtual bool updateTarget_moving();
+
+	virtual float getSearchDistance() override;
 };
