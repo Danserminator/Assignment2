@@ -46,6 +46,7 @@ protected:
 	FColor accelerationColor = FColor::Yellow;	// Color of line representing acceleration
 	FColor searchColor = FColor::Magenta;		// Color of line representing target when searching for more agents
 	FColor radiusColor = FColor(0, 200, 0);		// Color of the circle representing radius
+	FColor collisionColor = FColor::Red;		// Color of the line representing agent collision
 
 	bool followPath = false;
 	bool movingFormation = false;
@@ -58,6 +59,7 @@ protected:
 	float radiusSegments = 24;					// # of segments in the circle representing radius
 
 	float agentRadiusScalar = 4;				// Scalar from agent radius to obstacle search distance
+	FVector collisionSize = FVector(0, 0, 20);	// Shape of line that is drawn when agents collide
 
 public:
 	// Called when the game starts or when spawned

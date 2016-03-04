@@ -21,6 +21,18 @@ void AModelController::Tick(float DeltaTime)
 		FVector loc = FVector(agent->GetActorLocation().X, agent->GetActorLocation().Y, 0);
 		DrawDebugCircle(GWorld->GetWorld(), loc, agent->getAgentRadius(), radiusSegments, radiusColor,
 						false, 0.1, 0, 1, FVector(0, 1, 0), FVector(1, 0, 0), false);
+
+		TArray<AAgent *> agents = agent->getSeenAgents();
+		for (int32 c = 0; c < agents.Num(); c++) {
+			FVector2D aLoc = to2D(agent->GetActorLocation());
+			FVector2D oLoc = to2D(agents[c]->GetActorLocation());
+			float dist = FVector2D::Distance(aLoc, oLoc);
+
+			if (dist < (agent->getAgentRadius() * 2)) {
+				FVector cLoc = FVector(((aLoc + oLoc) / 2), 0);
+				DrawDebugLine(GWorld->GetWorld(), cLoc, cLoc + collisionSize, collisionColor, false, 0.1, 0, 1);
+			}
+		}
 	}
 
 	if (searching) {
