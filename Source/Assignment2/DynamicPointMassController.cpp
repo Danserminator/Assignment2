@@ -18,7 +18,57 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 	if (play) {
 		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
-		if (!movingFormation) {
+		if (avoidAgents) {
+			updateTarget();
+
+			if (waypointReached()) {
+				// TODO
+			} else {
+				acceleration = getAcceleration(deltaSec);
+				FVector vPref = velocity + acceleration;
+				vPref = vPref.GetClampedToSize(-vMax, vMax);
+
+				FVector oldVel = velocity;
+
+				adjustVelocity(to2D(vPref), deltaSec);
+
+				FVector2D q = to2D(velocity - oldVel);
+				float dv = FMath::Sqrt(FVector2D::DotProduct(q,q));
+				//float dv = velocity.Size() - oldVel.Size();
+
+				if (dv < aMax * deltaSec) {
+				} else {
+					float f = aMax * deltaSec / dv;
+					velocity = (1 - f) * oldVel + f * velocity;
+				}
+
+				/*
+				acceleration = getAcceleration(deltaSec);
+
+				drawLine(2 * acceleration, accelerationColor);
+
+				FVector vPref = velocity + acceleration;
+				vPref = vPref.GetClampedToSize(-vMax, vMax);
+
+				adjustVelocity(to2D(vPref), deltaSec);
+
+				if (vPref.Equals(velocity)) {
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("chose vPref\r\n")));
+				} else {
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("did not chose vPref\r\n")));
+				}
+				*/
+
+				FVector currentLocation = agent->GetActorLocation();
+
+				FVector newLocation = currentLocation + (velocity * deltaSec);
+
+				setRotation();
+
+				agent->SetActorLocation(newLocation);
+			}
+
+		} else if (!movingFormation) {
 			updateTarget();
 
 			if (waypointReached()) {
@@ -130,6 +180,7 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 {
 	FVector newAcceleration;
 
+	/*
 	float rotation = getRotation(agent->GetActorLocation(), target);
 
 	newAcceleration = deltaSec * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
@@ -152,8 +203,19 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 		if (normVelocity.Equals(normDistLeft, 0.1)) {
 			return -newAcceleration;
 		}
-	}
-	
+	}*/
+
+	float rotation = getRotation(agent->GetActorLocation(), target);
+
+	newAcceleration = deltaSec * aMax * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
+
+	FVector2D remainingDistance = target - to2D(agent->GetActorLocation());
+	remainingDistance.X = UKismetMathLibrary::Abs(remainingDistance.X);
+	remainingDistance.Y = UKismetMathLibrary::Abs(remainingDistance.Y);
+
+	newAcceleration.X = UKismetMathLibrary::FClamp(newAcceleration.X, -remainingDistance.X, remainingDistance.X);
+	newAcceleration.Y = UKismetMathLibrary::FClamp(newAcceleration.Y, -remainingDistance.Y, remainingDistance.Y);
+
 	return newAcceleration;
 }
 
@@ -219,6 +281,17 @@ bool ADynamicPointMassController::updateTarget_moving()
 
 float ADynamicPointMassController::getSearchDistance()
 {
-	return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
+	return 500;
+	//return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
 }
 
+FVector2D ADynamicPointMassController::vSample(float deltaSec) {
+	FVector2D aCand;
+	do {
+		aCand = FVector2D(2.0f*rand() - RAND_MAX, 2.0f*rand() - RAND_MAX);
+	} while (FVector2D::DotProduct(aCand, aCand) > (((float)RAND_MAX) * ((float)RAND_MAX)));
+
+	aCand *= (aMax / RAND_MAX) * deltaSec;
+
+	return to2D(velocity) + aCand;
+}

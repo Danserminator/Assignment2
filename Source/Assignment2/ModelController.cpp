@@ -370,7 +370,7 @@ void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
 
 		float ct = std::numeric_limits<float>::infinity();	// time to collision
 		for (auto it = neighbours.CreateIterator(); it; ++it) {
-			float ct_j = 0;										// time to collision with neighbour j
+			float ct_j = 0;									// time to collision with neighbour j
 			FVector2D vab;
 
 			float type = it.Value().X;						// type of neighbour
@@ -399,9 +399,11 @@ void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
 			if (ct_j < ct) {
 				ct = ct_j;
 
+				/*
 				if (safetyFactor / ct + dV >= min_penalty) {
 					break;
 				}
+				*/
 			}
 		}
 
