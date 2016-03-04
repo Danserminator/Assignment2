@@ -17,7 +17,9 @@ class ASSIGNMENT2_API AKinematicPointController : public AModelController
 	GENERATED_BODY()
 	
 private:
-	float const vMax = 100;
+	float const kpcVMax = 100;
+
+	float const shiftAngle = 10;			// How much the agent will shift when shifting
 
 public:
 	AKinematicPointController();
@@ -27,4 +29,8 @@ public:
 	
 private:
 	virtual FVector getVelocity(float deltaSec) const;
+
+	virtual FVector2D vSample(float deltaSec) override;
+
+	//virtual void checkObstacles(float deltaSec);
 };

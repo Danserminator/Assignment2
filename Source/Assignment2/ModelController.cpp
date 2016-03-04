@@ -18,6 +18,8 @@ void AModelController::Tick(float DeltaTime)
 	drawLine(2 * velocity, velocityColor);
 
 	if (avoidAgents) {
+		updateNeighbours();
+
 		FVector loc = FVector(agent->GetActorLocation().X, agent->GetActorLocation().Y, 0);
 		DrawDebugCircle(GWorld->GetWorld(), loc, agent->getAgentRadius(), radiusSegments, radiusColor,
 						false, 0.1, 0, 1, FVector(0, 1, 0), FVector(1, 0, 0), false);
@@ -27,8 +29,10 @@ void AModelController::Tick(float DeltaTime)
 			FVector2D aLoc = to2D(agent->GetActorLocation());
 			FVector2D oLoc = to2D(agents[c]->GetActorLocation());
 			float dist = FVector2D::Distance(aLoc, oLoc);
+			//float dist = FVector2D::DotProduct(aLoc - oLoc, aLoc - oLoc);
 
-			if (dist < (agent->getAgentRadius() * 2)) {
+			if (dist < agent->getAgentRadius()) {
+				play = false;
 				FVector cLoc = FVector(((aLoc + oLoc) / 2), 0);
 				DrawDebugLine(GWorld->GetWorld(), cLoc, cLoc + collisionSize, collisionColor, false, 0.1, 0, 1);
 			}
@@ -312,8 +316,141 @@ void AModelController::writeWaypointsToFile(const FString fileName)
 	FFileHelper::SaveStringToFile(stored, *projectDir);
 }
 
+void AModelController::updateNeighbours()
+{
+	collided = false;
+	neighbours.Empty();
 
+	// TODO: calculate obstacle neighbours
 
+	if (collided) return;
+
+	computeAgentNeighbours();
+}
+
+void AModelController::computeAgentNeighbours()
+{
+	TArray<AAgent *> agents = agent->getSeenAgents();
+
+	for (int32 c = 0; c < agents.Num(); c++) {
+		float dist = FVector2D::Distance(to2D(agent->GetActorLocation()), to2D(agents[c]->GetActorLocation()));
+
+		if (dist <= getSearchDistance()) {
+			if (dist < (agent->getAgentRadius() * agentRadiusScalar * 2)) {
+				if (!collided) {
+					collided = true;
+					neighbours.Empty();
+				}
+
+				FVector2D neighbour(AGENT, c);
+				neighbours.Add(dist, neighbour);
+			} else if (!collided) {
+				FVector2D neighbour(AGENT, c);
+				neighbours.Add(dist, neighbour);
+			}
+		}
+	}
+}
+
+void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
+{
+	float min_penalty = std::numeric_limits<float>::infinity();
+	FVector2D vCand;
+
+	for (int32 c = 0; c < vSamples; c++) {
+		if (c == 0)	vCand = vPref;
+		else		vCand = vSample(deltaSec);
+
+		float dV;	// distance between candidate velocity and preferred velocity
+		if (collided)	dV = 0;
+		else {
+			FVector2D q = vCand - vPref;
+			dV = FMath::Sqrt(FVector2D::DotProduct(q, q));
+		}
+
+		float ct = std::numeric_limits<float>::infinity();	// time to collision
+		for (auto it = neighbours.CreateIterator(); it; ++it) {
+			float ct_j = 0;										// time to collision with neighbour j
+			FVector2D vab;
+
+			float type = it.Value().X;						// type of neighbour
+			float id = it.Value().Y;						// id of neighbour (in respective list)
+
+			if (type == AGENT) {
+				AAgent * other = agent->getSeenAgents()[id];
+
+				AModelController * oController = static_cast<AModelController *>((other->GetController()));
+				vab = 2 * vCand - to2D(velocity) - to2D(oController->velocity);
+
+				FVector2D p = to2D(agent->GetActorLocation());
+				FVector2D p2 = to2D(other->GetActorLocation());
+				float time = timeToCollision(p, vab, p2, (agent->getAgentRadius() * agentRadiusScalar * 2), collided);
+
+				if (collided) {
+					ct_j = -FPlatformMath::CeilToFloat(time / deltaSec);
+					ct_j -= FVector2D::DotProduct(vCand, vCand) / (vMax * vMax);
+				} else {
+					ct_j = time;
+				}
+			} else if (type == OBSTACLE) {
+				// TODO
+			}
+
+			if (ct_j < ct) {
+				ct = ct_j;
+
+				if (safetyFactor / ct + dV >= min_penalty) {
+					break;
+				}
+			}
+		}
+
+		float penalty = safetyFactor / ct + dV;
+		if (penalty < min_penalty) {
+			min_penalty = penalty;
+
+			velocity = FVector(vCand, 0);
+		}
+	}
+}
+
+FVector2D AModelController::vSample(float deltaSec)
+{
+	return FVector2D();
+}
+
+float AModelController::timeToCollision(FVector2D p, FVector2D v, FVector2D p2, float radius, bool collision) {
+	FVector2D ba = p2 - p;
+	float sq_diam = radius * radius;
+	float time;
+
+	float determinant = FVector2D::CrossProduct(v, ba);
+	float absSq = FVector2D::DotProduct(v, v);
+
+	float discriminant = -(determinant * determinant) + sq_diam * absSq;
+	if (discriminant > 0) {
+		if (collision) {
+			time = (FVector2D::DotProduct(v, ba) + FMath::Sqrt(discriminant)) / absSq;
+			if (time < 0) {
+				time = -std::numeric_limits<float>::infinity();;
+			}
+		} else {
+			time = (FVector2D::DotProduct(v, ba) - FMath::Sqrt(discriminant)) / absSq;
+			if (time < 0) {
+				time = std::numeric_limits<float>::infinity();;
+			}
+		}
+	} else {
+		if (collision) {
+			time = -std::numeric_limits<float>::infinity();;
+		} else {
+			time = std::numeric_limits<float>::infinity();;
+		}
+	}
+	return time;
+}
+
+/*
 // X = When collision will occur (X <= 0 -> No collision)
 // Y = 0, brake
 // Y != 0, shift right
@@ -368,11 +505,15 @@ FVector2D AModelController::willCollide(AAgent * otherAgent) {
 	}
 
 	return result;
-}
+}*/
 
 float AModelController::getSearchDistance()
 {
-	return agentRadiusScalar * agent->getAgentRadius();
+	return getVMax() * agent->getAgentRadius() * agentRadiusScalar;
+}
+
+float AModelController::getVMax() {
+	return vMax;
 }
 
 /*

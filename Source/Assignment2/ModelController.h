@@ -39,6 +39,7 @@ protected:
 	//bool movingFormation = false;
 
 	FVector velocity;
+	float vMax = 0;
 
 	float errorTolerance = 3;					// Change this one in every model FFS!!!
 	
@@ -47,6 +48,8 @@ protected:
 	FColor searchColor = FColor::Magenta;		// Color of line representing target when searching for more agents
 	FColor radiusColor = FColor(0, 200, 0);		// Color of the circle representing radius
 	FColor collisionColor = FColor::Red;		// Color of the line representing agent collision
+
+	FVector collisionSize = FVector(0, 0, 20);	// Shape of line that is drawn when agents collide
 
 	bool followPath = false;
 	bool movingFormation = false;
@@ -58,8 +61,15 @@ protected:
 	float searchSize = 10;						// Size of point representing target when searching for more agents
 	float radiusSegments = 24;					// # of segments in the circle representing radius
 
-	float agentRadiusScalar = 4;				// Scalar from agent radius to obstacle search distance
-	FVector collisionSize = FVector(0, 0, 20);	// Shape of line that is drawn when agents collide
+	float agentSearchScalar = 4;				// Scalar from agent radius to obstacle search distance
+
+	bool collided = false;						// If agent has collided
+	int32 vSamples = 100;						// Number of velocity samples
+	TMultiMap<float, FVector2D> neighbours;		// Neighbours of agent, in increasing distance
+		const float AGENT = 0;					// float that represents that neighbour is an agent
+		const float OBSTACLE = 1;				// float that represents that neighbour is an obstacle
+	float safetyFactor = 1;						// Higher safety = less 'agressive'
+	float agentRadiusScalar = 2;				// Scalar for agent radius, so agent is bigger when checking for collisions
 
 public:
 	// Called when the game starts or when spawned
@@ -108,7 +118,19 @@ protected:
 
 	void writeWaypointsToFile(const FString fileName);
 
-	FVector2D willCollide(AAgent * otherAgent);
+	void updateNeighbours();
 
-	virtual float getSearchDistance();							// Gör denna instant istället en för multiplikation
+	void computeAgentNeighbours();
+
+	void adjustVelocity(FVector2D vPref, float deltaSec);
+
+	virtual FVector2D vSample(float deltaSec);
+
+	float timeToCollision(FVector2D p, FVector2D v, FVector2D p2, float radius, bool collision);
+
+	//FVector2D willCollide(AAgent * otherAgent);
+
+	virtual float getSearchDistance();
+
+	virtual float getVMax();
 };
