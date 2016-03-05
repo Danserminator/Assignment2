@@ -326,6 +326,16 @@ void AModelController::updateNeighbours()
 	if (collided) return;
 
 	computeAgentNeighbours();
+
+	neighbours.Sort([](const auto& One, const auto& Two) {
+		return One.Get<0>() < Two.Get<0>();
+	});
+
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("---------\r\n")));
+	for (int32 c = 0; c < neighbours.Num(); c++) {
+		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Element %d: %f\r\n"), c, neighbours[c].Get<0>()));
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("---------\r\n")));
 }
 
 void AModelController::computeAgentNeighbours()
@@ -342,11 +352,14 @@ void AModelController::computeAgentNeighbours()
 					neighbours.Empty();
 				}
 
-				FVector2D neighbour(AGENT, c);
-				neighbours.Add(dist, neighbour);
+				neighbours.Emplace(dist, AGENT, agents[c]);
+
+				//FVector2D neighbour(AGENT, c);
+				//neighbours.Add(dist, neighbour);
 			} else if (!collided) {
-				FVector2D neighbour(AGENT, c);
-				neighbours.Add(dist, neighbour);
+				//FVector2D neighbour(AGENT, c);
+				//neighbours.Add(dist, neighbour);
+				neighbours.Emplace(dist, AGENT, agents[c]);
 			}
 		}
 	}
@@ -354,6 +367,8 @@ void AModelController::computeAgentNeighbours()
 
 void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
 {
+	FVector newVelocity;
+
 	float min_penalty = std::numeric_limits<float>::infinity();
 	FVector2D vCand;
 
@@ -369,15 +384,15 @@ void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
 		}
 
 		float ct = std::numeric_limits<float>::infinity();	// time to collision
-		for (auto it = neighbours.CreateIterator(); it; ++it) {
+		for (int32 c = 0; c < neighbours.Num(); c++) { //auto it = neighbours.CreateIterator(); it; ++it) {
 			float ct_j = 0;									// time to collision with neighbour j
 			FVector2D vab;
 
-			float type = it.Value().X;						// type of neighbour
-			float id = it.Value().Y;						// id of neighbour (in respective list)
+			float type = neighbours[c].Get<1>(); //it.Value().X;						// type of neighbour
+			//float id = it.Value().Y;						// id of neighbour (in respective list)
 
 			if (type == AGENT) {
-				AAgent * other = agent->getSeenAgents()[id];
+				AAgent * other = (AAgent *) neighbours[c].Get<2>();	//	agent->getSeenAgents()[id];
 
 				AModelController * oController = static_cast<AModelController *>((other->GetController()));
 				vab = 2 * vCand - to2D(velocity) - to2D(oController->velocity);
@@ -399,11 +414,11 @@ void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
 			if (ct_j < ct) {
 				ct = ct_j;
 
-				/*
+				
 				if (safetyFactor / ct + dV >= min_penalty) {
 					break;
 				}
-				*/
+				
 			}
 		}
 
@@ -411,9 +426,11 @@ void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
 		if (penalty < min_penalty) {
 			min_penalty = penalty;
 
-			velocity = FVector(vCand, 0);
+			newVelocity = FVector(vCand, 0);
 		}
 	}
+
+	velocity = newVelocity;
 }
 
 FVector2D AModelController::vSample(float deltaSec)

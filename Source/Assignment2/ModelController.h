@@ -64,8 +64,8 @@ protected:
 	float agentSearchScalar = 4;				// Scalar from agent radius to obstacle search distance
 
 	bool collided = false;						// If agent has collided
-	int32 vSamples = 100;						// Number of velocity samples
-	TMultiMap<float, FVector2D> neighbours;		// Neighbours of agent, in increasing distance
+	int32 vSamples = 250;						// Number of velocity samples
+	TArray<TTuple<float, float, void *>> neighbours; //TMultiMap<float, FVector2D> neighbours;		// Neighbours of agent, in increasing distance
 		const float AGENT = 0;					// float that represents that neighbour is an agent
 		const float OBSTACLE = 1;				// float that represents that neighbour is an obstacle
 	float safetyFactor = 1;						// Higher safety = less 'agressive'

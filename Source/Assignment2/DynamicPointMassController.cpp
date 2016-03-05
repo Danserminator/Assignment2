@@ -8,6 +8,7 @@
 ADynamicPointMassController::ADynamicPointMassController()
 {
 	errorTolerance = 0.01;	// Because this is the bomb!
+	vMax = dpmcVMax;
 }
 
 // Called every frame
@@ -26,21 +27,27 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 			} else {
 				acceleration = getAcceleration(deltaSec);
 				FVector vPref = velocity + acceleration;
-				vPref = vPref.GetClampedToSize(-vMax, vMax);
+				vPref = vPref.GetClampedToSize2D(-vMax, vMax);
 
 				FVector oldVel = velocity;
 
 				adjustVelocity(to2D(vPref), deltaSec);
 
-				FVector2D q = to2D(velocity - oldVel);
-				float dv = FMath::Sqrt(FVector2D::DotProduct(q,q));
+				if (UKismetMathLibrary::Abs(velocity.Size2D() - oldVel.Size2D()) / deltaSec > aMax + 0.1) {
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Acceleration: %f\r\n"), UKismetMathLibrary::Abs(velocity.Size2D() - oldVel.Size2D()) / deltaSec));
+				}
+
+				drawLine(2 * (velocity - oldVel) / deltaSec, accelerationColor);
+
+				//FVector2D q = to2D(velocity - oldVel);
+				//float dv = FMath::Sqrt(FVector2D::DotProduct(q,q));
 				//float dv = velocity.Size() - oldVel.Size();
 
-				if (dv < aMax * deltaSec) {
-				} else {
-					float f = aMax * deltaSec / dv;
-					velocity = (1 - f) * oldVel + f * velocity;
-				}
+				//if (dv < aMax * deltaSec) {
+				//} else {
+				//	float f = aMax * deltaSec / dv;
+				//	velocity = (1 - f) * oldVel + f * velocity;
+				//}
 
 				/*
 				acceleration = getAcceleration(deltaSec);
@@ -78,13 +85,13 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 
 				acceleration = getAcceleration(deltaSec);
 
-				GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Acceleration: %f\r\n"), acceleration.Size2D() / deltaSec));
+				//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Acceleration: %f\r\n"), acceleration.Size2D() / deltaSec));
 
 				drawLine(2 * acceleration, accelerationColor);
 
 				velocity += acceleration;
 
-				if (!everybodyKnows) {
+				if (!everybodyKnows && !movingFormation) {
 					velocity = velocity.GetClampedToSize(-everybodyKnowsSpeed, everybodyKnowsSpeed);
 				}
 				else {
@@ -191,7 +198,7 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 
 	FVector haveToGo = wantToGo - (velocity * (to2D(velocity).Size() / aMax));
 
-	newAcceleration = haveToGo.GetClampedToMaxSize2D(aMax * deltaSec);
+	newAcceleration = haveToGo.GetClampedToSize2D(-aMax * deltaSec, aMax * deltaSec);
 
 	return newAcceleration;
 
@@ -242,7 +249,7 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 
 float ADynamicPointMassController::getBrakeDistance() const
 {
-	float velocityLength = to2D(velocity).Size();
+	float velocityLength = velocity.Size2D();
 
 	velocityLength = velocityLength * velocityLength / (aMax * 2);
 
@@ -302,8 +309,8 @@ bool ADynamicPointMassController::updateTarget_moving()
 
 float ADynamicPointMassController::getSearchDistance()
 {
-	return 500;
-	//return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
+	return vMax * vMax / (aMax * 2);
+	return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
 }
 
 FVector2D ADynamicPointMassController::vSample(float deltaSec) {
@@ -312,7 +319,11 @@ FVector2D ADynamicPointMassController::vSample(float deltaSec) {
 		aCand = FVector2D(2.0f*rand() - RAND_MAX, 2.0f*rand() - RAND_MAX);
 	} while (FVector2D::DotProduct(aCand, aCand) > (((float)RAND_MAX) * ((float)RAND_MAX)));
 
-	aCand *= (aMax / RAND_MAX) * deltaSec;
+	aCand *= (aMax / RAND_MAX);
 
-	return to2D(velocity) + aCand;
+	FVector temp = to3D(aCand).ClampSize2D(-aMax * deltaSec, aMax * deltaSec);
+
+	FVector newVelocity = (velocity + temp).GetClampedToSize2D(-vMax, vMax);
+
+	return to2D(newVelocity);
 }

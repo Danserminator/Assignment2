@@ -9,6 +9,7 @@
 AKinematicPointController::AKinematicPointController()
 {
 	errorTolerance = 0.001;
+	vMax = kpcVMax;
 }
 
 void AKinematicPointController::Tick(float DeltaSeconds)
