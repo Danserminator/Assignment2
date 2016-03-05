@@ -68,14 +68,17 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				agent->SetActorLocation(newLocation);
 			}
 
-		} else if (!movingFormation) {
+		} else {
 			updateTarget();
 
 			if (waypointReached()) {
 				// TODO
 			}
 			else {
+
 				acceleration = getAcceleration(deltaSec);
+
+				GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Acceleration: %f\r\n"), acceleration.Size2D() / deltaSec));
 
 				drawLine(2 * acceleration, accelerationColor);
 
@@ -97,7 +100,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				agent->SetActorLocation(newLocation);
 				//agent->SetActorLocationAndRotation(newLocation, rotation);
 			}
-		} else {
+		} /*else {
 			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("%s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
 			if (moveTarget || agent->numberUnseenAgents() > 0) {
 				updateTarget();
@@ -150,7 +153,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 					agent->SetActorLocation(newLocation);
 				}
 			}
-		}
+		}*/
 	}
 }
 
@@ -180,8 +183,24 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 {
 	FVector newAcceleration;
 
-	/*
 	float rotation = getRotation(agent->GetActorLocation(), target);
+
+	float distLeftLength = (target - to2D(agent->GetActorLocation())).Size() - safetyBuffer;
+
+	FVector wantToGo = distLeftLength * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
+
+	FVector haveToGo = wantToGo - (velocity * (to2D(velocity).Size() / aMax));
+
+	newAcceleration = haveToGo.GetClampedToMaxSize2D(aMax * deltaSec);
+
+	return newAcceleration;
+
+	/*
+	if (haveToGo.Size() < aMax) {
+		haveToGo.max
+	}
+
+	newAcceleration = 
 
 	newAcceleration = deltaSec * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
 
@@ -189,7 +208,7 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 
 	float velocityLength = getBrakeDistance();
 
-	float distLeftLength = (target - to2D(agent->GetActorLocation())).Size() - safetyBuffer;
+	
 	//float distLeftLength = UKismetMathLibrary::VSize(to3D(target) - to3D(to2D(agent->GetActorLocation()))) - safetyBuffer;
 
 	if (velocityLength >= distLeftLength) {
@@ -203,8 +222,10 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 		if (normVelocity.Equals(normDistLeft, 0.1)) {
 			return -newAcceleration;
 		}
-	}*/
+	}
+	*/
 
+	/*
 	float rotation = getRotation(agent->GetActorLocation(), target);
 
 	newAcceleration = deltaSec * aMax * FVector(UKismetMathLibrary::DegCos(rotation), UKismetMathLibrary::DegSin(rotation), 0);
@@ -215,7 +236,7 @@ FVector ADynamicPointMassController::getAcceleration(float deltaSec) const
 
 	newAcceleration.X = UKismetMathLibrary::FClamp(newAcceleration.X, -remainingDistance.X, remainingDistance.X);
 	newAcceleration.Y = UKismetMathLibrary::FClamp(newAcceleration.Y, -remainingDistance.Y, remainingDistance.Y);
-
+	*/
 	return newAcceleration;
 }
 
