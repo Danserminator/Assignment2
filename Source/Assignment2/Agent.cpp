@@ -12,7 +12,7 @@ AAgent::AAgent()
 
 }
 
-void AAgent::init(TArray<AAgent *> agents, float r)
+void AAgent::init(TArray<AAgent *> agents, float r, int32 id)
 {
 	seeRadius = r;
 
@@ -23,6 +23,8 @@ void AAgent::init(TArray<AAgent *> agents, float r)
 	} else {
 		unseenAgents = agents;
 	}
+
+	this->id = id;
 
 	SpawnDefaultController();	
 }
@@ -77,6 +79,12 @@ void AAgent::setAgentRadius(float agentRadius)
 	this->agentRadius = agentRadius;
 }
 
-float AAgent::getAgentRadius() {
+float AAgent::getAgentRadius()
+{
 	return agentRadius;
+}
+
+int32 AAgent::getAgentID()
+{
+	return id;
 }

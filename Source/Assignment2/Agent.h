@@ -11,6 +11,7 @@ class ASSIGNMENT2_API AAgent : public ACharacter {
 	GENERATED_BODY()
 
 public:
+	int32 id;
 	float seeRadius, agentRadius;
 	TArray<AAgent *> unseenAgents;
 	TArray<AAgent *> seenAgents;
@@ -19,7 +20,7 @@ public:
 	AAgent();
 
 	UFUNCTION(BlueprintCallable, Category = "Agent")
-	void init(TArray<AAgent *> agents, float r = 0);
+	void init(TArray<AAgent *> agents, float r = 0, int32 id = 0);
 
 	void findAgents();
 
@@ -35,4 +36,7 @@ public:
 	void setAgentRadius(float agentRadius);
 
 	float getAgentRadius();
+
+	UFUNCTION(BlueprintCallable, Category = "Agent")
+	int32 getAgentID();
 };
