@@ -19,8 +19,6 @@ class ASSIGNMENT2_API AKinematicPointController : public AModelController
 private:
 	float const kpcVMax = 100;
 
-	float const shiftAngle = 10;			// How much the agent will shift when shifting
-
 public:
 	AKinematicPointController();
 
