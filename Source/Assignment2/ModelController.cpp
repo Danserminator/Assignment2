@@ -331,11 +331,13 @@ void AModelController::updateNeighbours()
 		return One.Get<0>() < Two.Get<0>();
 	});
 
+	/*
 	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("---------\r\n")));
 	for (int32 c = 0; c < neighbours.Num(); c++) {
 		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Element %d: %f\r\n"), c, neighbours[c].Get<0>()));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("---------\r\n")));
+	*/
 }
 
 void AModelController::computeAgentNeighbours()
@@ -414,11 +416,9 @@ void AModelController::adjustVelocity(FVector2D vPref, float deltaSec)
 			if (ct_j < ct) {
 				ct = ct_j;
 
-				
 				if (safetyFactor / ct + dV >= min_penalty) {
 					break;
 				}
-				
 			}
 		}
 

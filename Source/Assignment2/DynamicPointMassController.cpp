@@ -26,28 +26,42 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				// TODO
 			} else {
 				acceleration = getAcceleration(deltaSec);
+				//FVector vPref = to3D(target - to2D(agent->GetActorLocation()));
 				FVector vPref = velocity + acceleration;
 				vPref = vPref.GetClampedToSize2D(-vMax, vMax);
+				//vPref *= deltaSec;
+
+				/*
+				FVector2D g = target - to2D(agent->GetActorLocation());
+				float distSq2subgoal = FVector2D::DotProduct(g, g);
+
+				FVector2D vPref;
+				float s = vMax * deltaSec;
+				if ((s*s) > distSq2subgoal) {
+					vPref = g / deltaSec;
+				} else {
+					vPref = (vMax * g) / FMath::Sqrt(distSq2subgoal);
+				}
+				*/
 
 				FVector oldVel = velocity;
 
 				adjustVelocity(to2D(vPref), deltaSec);
+
+				FVector2D q = to2D(velocity - oldVel);
+				float dv = FMath::Sqrt(FVector2D::DotProduct(q,q));
+				//float dv = velocity.Size() - oldVel.Size();
+
+				if (dv > aMax * deltaSec) {
+					float f = aMax * deltaSec / dv;
+					velocity = (1 - f) * oldVel + f * velocity;
+				}
 
 				if (UKismetMathLibrary::Abs(velocity.Size2D() - oldVel.Size2D()) / deltaSec > aMax + 0.1) {
 					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Acceleration: %f\r\n"), UKismetMathLibrary::Abs(velocity.Size2D() - oldVel.Size2D()) / deltaSec));
 				}
 
 				drawLine(2 * (velocity - oldVel) / deltaSec, accelerationColor);
-
-				//FVector2D q = to2D(velocity - oldVel);
-				//float dv = FMath::Sqrt(FVector2D::DotProduct(q,q));
-				//float dv = velocity.Size() - oldVel.Size();
-
-				//if (dv < aMax * deltaSec) {
-				//} else {
-				//	float f = aMax * deltaSec / dv;
-				//	velocity = (1 - f) * oldVel + f * velocity;
-				//}
 
 				/*
 				acceleration = getAcceleration(deltaSec);
@@ -309,12 +323,22 @@ bool ADynamicPointMassController::updateTarget_moving()
 
 float ADynamicPointMassController::getSearchDistance()
 {
+	return 5000;
 	return vMax * vMax / (aMax * 2);
 	return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
 }
 
 FVector2D ADynamicPointMassController::vSample(float deltaSec) {
-	FVector2D aCand;
+	FVector2D vCand;
+	do {
+		vCand = FVector2D(2.0f*rand() - RAND_MAX, 2.0f*rand() - RAND_MAX);
+	} while (FVector2D::DotProduct(vCand, vCand) > (((float)RAND_MAX) * ((float)RAND_MAX)));
+
+	vCand *= (vMax / RAND_MAX); // *deltaSec;
+
+	return vCand;
+
+	/*FVector2D aCand;
 	do {
 		aCand = FVector2D(2.0f*rand() - RAND_MAX, 2.0f*rand() - RAND_MAX);
 	} while (FVector2D::DotProduct(aCand, aCand) > (((float)RAND_MAX) * ((float)RAND_MAX)));
@@ -326,4 +350,5 @@ FVector2D ADynamicPointMassController::vSample(float deltaSec) {
 	FVector newVelocity = (velocity + temp).GetClampedToSize2D(-vMax, vMax);
 
 	return to2D(newVelocity);
+	*/
 }

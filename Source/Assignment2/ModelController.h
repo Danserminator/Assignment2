@@ -68,7 +68,7 @@ protected:
 	TArray<TTuple<float, float, void *>> neighbours; //TMultiMap<float, FVector2D> neighbours;		// Neighbours of agent, in increasing distance
 		const float AGENT = 0;					// float that represents that neighbour is an agent
 		const float OBSTACLE = 1;				// float that represents that neighbour is an obstacle
-	float safetyFactor = 1;						// Higher safety = less 'agressive'
+	float safetyFactor = 10;					// Higher safety = less 'agressive'
 	float agentRadiusScalar = 2;				// Scalar for agent radius, so agent is bigger when checking for collisions
 
 public:
