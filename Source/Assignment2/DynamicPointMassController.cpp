@@ -24,7 +24,13 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 			updateTarget();
 
 			if (waypointReached()) {
-				// TODO
+				bool t35 = followPath && waypointsIndex >= waypoints.Num();
+				bool t4 = avoidAgents && !followPath;
+
+				if (t35 || t4) {
+					play = false;
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
+				}
 			} else {
 				acceleration = getAcceleration(deltaSec);
 				//FVector vPref = to3D(target - to2D(agent->GetActorLocation()));
