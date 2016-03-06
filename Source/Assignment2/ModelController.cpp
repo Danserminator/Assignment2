@@ -84,8 +84,22 @@ void AModelController::setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> 
 	}
 	
 	for (int32 c = 1; c < customers.Num(); c++) {
-		waypoints.Append(AStar::getPath(graph->getGraph(), graph->getVertices(), customers[c - 1], customers[c]));
+		TArray<FVector2D> path = AStar::getPath(graph->getGraph(), graph->getVertices(), customers[c - 1], customers[c]);
+		path.RemoveAt(0);
+		waypoints.Append(path);
 	}
+
+	/*
+	FString str;
+	for (int32 c = 0; c < waypoints.Num(); c++) {
+		str.Append("{");
+		str.Append(FString::SanitizeFloat(waypoints[c].X));
+		str.Append(", ");
+		str.Append(FString::SanitizeFloat(waypoints[c].Y));
+		str.Append("} ");
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("%s"), *str));
+	*/
 
 	writeWaypointsToFile("Waypoints.txt");
 }
