@@ -34,6 +34,8 @@ public:
 
 	TArray<TArray<FVector2D>> getEdges();
 
+	bool canSee(FVector2D start, FVector2D end, TArray<TArray<FVector2D>> & edges);
+
 private:
 	void makeObstacles(TArray<FVector> corners);
 
@@ -46,8 +48,6 @@ private:
 	bool insidePoly(TArray<FVector2D> poly, FVector2D point);
 
 	void makeGraph(TArray<TArray<FVector2D>> edges, TArray<FVector2D> vertices);
-
-	bool canSee(FVector2D start, FVector2D end, TArray<TArray<FVector2D>> & edges);
 
 	bool intersect(FVector2D point1, FVector2D point2, FVector2D point3, FVector2D point4);
 

@@ -5,7 +5,7 @@
 
 ADynamicCarController::ADynamicCarController()
 {
-	errorTolerance = 5;
+	errorTolerance = 3;
 }
 
 //GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
@@ -25,42 +25,24 @@ void ADynamicCarController::Tick(float DeltaSeconds)
 			rotation.Yaw = getRotation(agent->GetActorLocation(), target);
 			agent->SetActorRotation(rotation);
 
-			FString str;
+			waypoints = DubinsPath::getPath(waypoints, to2D(agent->GetActorLocation()), rotation.Yaw, maxAngle, L, graph, errorTolerance);
 
-			for (int32 c = 0; c < waypoints.Num(); c++) {
-				str.Append(waypoints[c].ToString());
-				str.Append(", ");
-			}
+			writeWaypointsToFile("Waypoints2.txt");
 
-			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Before: %s"), *str));
-
-			waypoints = DubinsPath::getPath(waypoints, to2D(agent->GetActorLocation()), rotation.Yaw, maxAngle, L);
-		
-			str = FString("");
-
-			for (int32 c = 0; c < waypoints.Num(); c++) {
-				str.Append(waypoints[c].ToString());
-				str.Append(", ");
-			}
-
-			writeWaypointsToFile("Waypoints.txt");
-
-			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("After: %s"), *str));
-		
 			if (waypoints.Num() > 0) {
 				target = waypoints[0];
 			}
 		}
 
-		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("%s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
+		if (waypointReached()) {
+			return;
+		}
 
 		DrawDebugLine(GWorld->GetWorld(), to3D(target), to3D(target) + collisionSize, collisionColor, false, 0.1, 0, 1);
 
 		float a = getAcceleration(deltaSec);
 
 		v += a;
-		
-		v = 10;
 
 		v = UKismetMathLibrary::FClamp(v, -vMax, vMax);
 
@@ -71,130 +53,17 @@ void ADynamicCarController::Tick(float DeltaSeconds)
 
 		drawLine(2 * acceleration / deltaSec, accelerationColor);
 
-		velocity.X = v * UKismetMathLibrary::DegCos(rotation);
-		velocity.Y = v * UKismetMathLibrary::DegSin(rotation);
+		velocity = FVector(v * UKismetMathLibrary::DegCos(rotation) * deltaSec, v * UKismetMathLibrary::DegSin(rotation) * deltaSec, 0);
+
+		float rot = agent->GetActorRotation().Yaw;
 
 		setRotation();
 
-		agent->SetActorLocation(agent->GetActorLocation() + (velocity * deltaSec));
+		GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("%f"), UKismetMathLibrary::Abs(rot - agent->GetActorRotation().Yaw) / deltaSec));
 
-		/*
-		if (!movingFormation) {
-			updateTarget();
+		agent->SetActorLocation(agent->GetActorLocation() + velocity);
 
-			if (waypointReached()) {
-				bool t35 = followPath && waypointsIndex >= waypoints.Num();
-				bool t4 = avoidAgents && !followPath;
-
-				if (t35 || t4) {
-					play = false;
-					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
-				}
-			} else {
-				if (first) {
-					first = false;
-					FRotator rotation = agent->GetActorRotation();
-					rotation.Yaw = getRotation(agent->GetActorLocation(), target);
-					agent->SetActorRotation(rotation);
-				}
-
-				if (lookingAtTarget() || true) {
-					float a = getAcceleration(deltaSec);
-
-					v += a;
-
-					v = UKismetMathLibrary::FClamp(v, -vMax, vMax);
-
-					float rotation = rotate(deltaSec);
-
-					acceleration.X = a * UKismetMathLibrary::DegCos(rotation);
-					acceleration.Y = a * UKismetMathLibrary::DegSin(rotation);
-
-					drawLine(2 * acceleration / deltaSec, accelerationColor);
-
-					velocity.X = v * UKismetMathLibrary::DegCos(rotation);
-					velocity.Y = v * UKismetMathLibrary::DegSin(rotation);
-
-					setRotation();
-
-					agent->SetActorLocation(agent->GetActorLocation() + (velocity * deltaSec));
-				} else {
-
-				}
-			}
-		} else {
-			if (moveTarget || agent->numberUnseenAgents() > 0) {
-				updateTarget();
-
-				if (first) {
-					first = false;
-					FRotator rotation = agent->GetActorRotation();
-					rotation.Yaw = getRotation(agent->GetActorLocation(), target);
-					agent->SetActorRotation(rotation);
-				}
-
-				float a = getAcceleration(deltaSec);
-
-				v += a;
-
-				v = UKismetMathLibrary::FClamp(v, -vMax, vMax);
-
-				float rotation = rotate(deltaSec);
-
-				acceleration.X = a * UKismetMathLibrary::DegCos(rotation);
-				acceleration.Y = a * UKismetMathLibrary::DegSin(rotation);
-
-				drawLine(2 * acceleration / deltaSec, accelerationColor);
-
-				velocity.X = v * UKismetMathLibrary::DegCos(rotation);
-				velocity.Y = v * UKismetMathLibrary::DegSin(rotation);
-
-				setRotation();
-
-				agent->SetActorLocation(agent->GetActorLocation() + (velocity * deltaSec));
-			} else {
-				if (firstTry) {
-					firstTry = false;
-					updateTarget();
-					return;
-				} else if (secondTry) {
-					secondTry = false;
-					updateTarget();
-				}
-
-				if (waypointReached()) {
-					moveTarget = true;
-				} else {
-					if (first) {
-						first = false;
-						FRotator rotation = agent->GetActorRotation();
-						rotation.Yaw = getRotation(agent->GetActorLocation(), target);
-						agent->SetActorRotation(rotation);
-					}
-
-					float a = getAcceleration(deltaSec);
-
-					v += a;
-
-					v = UKismetMathLibrary::FClamp(v, -vMax, vMax);
-
-					float rotation = rotate(deltaSec);
-
-					acceleration.X = a * UKismetMathLibrary::DegCos(rotation);
-					acceleration.Y = a * UKismetMathLibrary::DegSin(rotation);
-
-					drawLine(2 * acceleration / deltaSec, accelerationColor);
-
-					velocity.X = v * UKismetMathLibrary::DegCos(rotation);
-					velocity.Y = v * UKismetMathLibrary::DegSin(rotation);
-
-					setRotation();
-
-					agent->SetActorLocation(agent->GetActorLocation() + (velocity * deltaSec));
-				}
-			}
-		}
-		*/
+		DrawDebugLine(GWorld->GetWorld(), agent->GetActorLocation(), agent->GetActorLocation() + collisionSize, FColor::Green, false, 0.1, 0, 1);
 	}
 }
 
@@ -206,32 +75,6 @@ bool ADynamicCarController::lookingAtTarget()
 
 	return UKismetMathLibrary::Abs(wantedRotation - realRotation) < 0.1;
 }
-
-/*
-bool ADynamicCarController::waypointReached()
-{
-	if (AModelController::waypointReached()) {
-		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
-
-		float frameAcceleration = getAcceleration(deltaSec);
-
-		float frameVelocity = v * deltaSec;
-
-		if (UKismetMathLibrary::Abs(frameVelocity) > UKismetMathLibrary::Abs(frameAcceleration)) {
-			// Too high velocity for us to stop in this time frame.
-			return false;
-		}
-		else {
-			// Can stop in this time frame.
-			velocity = FVector(0, 0, 0);
-			v = 0;
-			return true;
-		}
-	}
-
-	return false;
-}
-*/
 
 float ADynamicCarController::getAcceleration(float deltaSec) const
 {
@@ -265,15 +108,15 @@ float ADynamicCarController::rotate(float deltaSec) const
 
 	float curMaxAngle = maxAngle * deltaSec;					// Max angle for this tick
 
-	rotation = UKismetMathLibrary::ClampAngle(positiveAngle(rotation), -maxAngle, maxAngle);
+	rotation = UKismetMathLibrary::ClampAngle(positiveAngle(rotation), -curMaxAngle, curMaxAngle);
 
 	rotation = UKismetMathLibrary::DegTan(positiveAngle(rotation));
 
 	rotation *= v / L;
 
-	rotation += agent->GetActorRotation().Yaw;
+	rotation += UKismetMathLibrary::DegreesToRadians(agent->GetActorRotation().Yaw);
 
-	return rotation;
+	return UKismetMathLibrary::RadiansToDegrees(rotation);
 }
 
 float ADynamicCarController::getBrakeDistance() const

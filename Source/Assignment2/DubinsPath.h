@@ -3,6 +3,7 @@
 #pragma once
 
 #include "General.h"
+#include "VisibilityGraph.h"
 #include "Kismet/KismetMathLibrary.h"
 
 #define RIGHT 0
@@ -14,7 +15,9 @@
 class ASSIGNMENT2_API DubinsPath
 {
 public:
-	static TArray<FVector2D> getPath(TArray<FVector2D> waypoints, FVector2D location, float rotation, float maxAngle, float length);
+	static TArray<FVector2D> getPath(TArray<FVector2D> waypoints, FVector2D location, float rotation, float maxAngle, float length, AVisibilityGraph * vGraph, float errorTolerance);
+
+	static bool validRoute(TArray<FVector2D> route, FVector2D currentLocation, float currentRotation, float maxAngle, float errorTolerance, float length, AVisibilityGraph * vGraph);
 
 	static TTuple<FVector2D, FVector2D> calculatedCircles(FVector2D location, float rotation, float turnRadius);
 

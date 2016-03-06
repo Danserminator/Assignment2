@@ -18,7 +18,7 @@ private:
 	FVector acceleration;
 	float const aMax = 1;
 	float const vMax = 10;
-	float const maxAngle = 57.2957795;
+	float const maxAngle = 40; // 57.2957795;
 	float const L = 10;
 	float const safetyBuffer = 1;
 
@@ -41,8 +41,6 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	//virtual bool waypointReached() override;
-
 	bool lookingAtTarget();
 
 	virtual float getAcceleration(float deltaSec) const;

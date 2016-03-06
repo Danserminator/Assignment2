@@ -3,7 +3,7 @@
 #include "Assignment2.h"
 #include "DubinsPath.h"
 
-TArray<FVector2D> DubinsPath::getPath(TArray<FVector2D> waypoints, FVector2D location, float rotation, float maxAngle, float length)
+TArray<FVector2D> DubinsPath::getPath(TArray<FVector2D> waypoints, FVector2D location, float rotation, float maxAngle, float length, AVisibilityGraph * vGraph, float errorTolerance)
 {
 	// Remove the first one if it is in the current location
 	bool removed = false;
@@ -24,7 +24,8 @@ TArray<FVector2D> DubinsPath::getPath(TArray<FVector2D> waypoints, FVector2D loc
 
 	TArray<FVector2D> newWaypoints;
 
-	float turnRadius = length / UKismetMathLibrary::Sin(UKismetMathLibrary::DegreesToRadians(maxAngle));
+	float turnRadius = (length / UKismetMathLibrary::Sin(UKismetMathLibrary::DegreesToRadians(maxAngle))) + (length / UKismetMathLibrary::DegTan(maxAngle)); // length / UKismetMathLibrary::Sin(UKismetMathLibrary::DegreesToRadians(maxAngle));
+	turnRadius /= 2;
 
 	FVector2D currentLocation = location;
 	float currentRotation = UKismetMathLibrary::DegreesToRadians(rotation);
@@ -32,10 +33,6 @@ TArray<FVector2D> DubinsPath::getPath(TArray<FVector2D> waypoints, FVector2D loc
 	for (int32 c = 1; c < waypoints.Num(); c++) {
 		FVector2D currentWaypoint = waypoints[c - 1];
 		FVector2D nextWaypoint = waypoints[c];			// We want to be facing this waypoint when we reach the current waypoint
-
-		if (currentLocation.Equals(nextWaypoint, 0)) {
-			continue;
-		}
 
 		float wantedRotation = getRotation(currentWaypoint, nextWaypoint);
 
@@ -112,8 +109,8 @@ TArray<FVector2D> DubinsPath::getPath(TArray<FVector2D> waypoints, FVector2D loc
 				for (int32 i = 0; i < routes.Num(); i++) {
 					TArray<FVector2D> route = routes[i].Get<1>();
 
-					bool collide = false;
-					if (!collide) {
+					bool valid = validRoute(route, currentLocation, currentRotation, maxAngle, errorTolerance, length, vGraph);
+					if (valid) {
 						for (int32 j = 0; j < route.Num(); j++) {
 							newWaypoints.Add(route[j]);
 						}
@@ -138,6 +135,55 @@ TArray<FVector2D> DubinsPath::getPath(TArray<FVector2D> waypoints, FVector2D loc
 	}
 
 	return newWaypoints;
+}
+
+bool DubinsPath::validRoute(TArray<FVector2D> route, FVector2D currentLocation, float currentRotation, float maxAngle, float errorTolerance, float length, AVisibilityGraph * vGraph)
+{
+	if (route.Num() == 0) {
+		return false;
+	}
+
+	float stepSize = 0.02;
+
+	float v = 1;
+
+	TArray<TArray<FVector2D>> edges = vGraph->getEdges();
+
+	for (int32 c = 0; c < route.Num(); c++) {
+		FVector2D target = route[c];
+
+		while (!currentLocation.Equals(target, errorTolerance)) {
+			float rotation = positiveAngle(UKismetMathLibrary::FindLookAtRotation(to3D(currentLocation), to3D(target)).Yaw);
+
+			rotation -= currentRotation;
+
+			float curMaxAngle = maxAngle * stepSize;
+
+			rotation = UKismetMathLibrary::ClampAngle(positiveAngle(rotation), -curMaxAngle, curMaxAngle);
+
+			rotation = UKismetMathLibrary::DegTan(positiveAngle(rotation));
+
+			rotation *= v / length;
+
+			rotation += UKismetMathLibrary::DegreesToRadians(currentRotation);
+
+			currentRotation = UKismetMathLibrary::RadiansToDegrees(rotation);
+
+			FVector2D newLocation(v * UKismetMathLibrary::DegCos(currentRotation) * stepSize, v * UKismetMathLibrary::DegSin(currentRotation) * stepSize);
+
+			newLocation += currentLocation;
+
+			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("%s -> %s"), *currentLocation.ToString(), *target.ToString()));
+
+			if (!vGraph->canSee(currentLocation, newLocation, edges)) {
+				return false;
+			} else {
+				currentLocation = newLocation;
+			}
+		}
+	}
+
+	return true;
 }
 
 float DubinsPath::normal(FVector2D start, FVector2D end)

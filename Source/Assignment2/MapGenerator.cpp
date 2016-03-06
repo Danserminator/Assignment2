@@ -8,10 +8,10 @@
 void AMapGenerator::generateObstacles(TArray<FVector> & corners)
 {
 	{
-		// This have nothing to do with anything here. CLEARS A FILE!
+		// This have nothing to do with anything here. CLEARS A TWO FILE!
 		FString projectDir = FPaths::GameDir();
-		projectDir += "Output Data/Waypoints.txt";
-		FFileHelper::SaveStringToFile(FString(), *projectDir);
+		FFileHelper::SaveStringToFile(FString(), *(projectDir + "Output Data/Waypoints.txt"));
+		FFileHelper::SaveStringToFile(FString(), *(projectDir + "Output Data/Waypoints2.txt"));
 	}
 
 	// Get MazeBlock blueprint
