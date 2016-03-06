@@ -42,10 +42,9 @@ void AKinematicPointController::Tick(float DeltaSeconds)
 			setRotation();
 
 			agent->SetActorLocation(newLocation);
-			//agent->SetActorLocationAndRotation(newLocation, rotation);
 
 			if (waypointReached()) {
-				bool t1 = !followPath && !movingFormation && !avoidAgents;
+				bool t1 = agent->getSeeRadius() == 0 && !followPath && !movingFormation && !avoidAgents;
 				bool t35 = followPath && waypointsIndex >= waypoints.Num();
 				bool t4 = avoidAgents && !followPath;
 
@@ -86,6 +85,11 @@ FVector2D AKinematicPointController::vSample(float deltaSec)
 	vCand *= (vMax / RAND_MAX) * deltaSec;
 
 	return vCand;
+}
+
+bool AKinematicPointController::isMovingTowardsTarget(FVector2D target)
+{
+	return true;
 }
 
 /*

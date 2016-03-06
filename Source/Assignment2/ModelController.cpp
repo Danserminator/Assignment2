@@ -203,7 +203,6 @@ bool AModelController::updateTarget_still()
 
 	} else {
 		// We know where all the other agents are.
-
 		formation->foundAllAgents(agent);	// Tell formation that we have found all agents.
 
 		searching = false;
@@ -211,12 +210,14 @@ bool AModelController::updateTarget_still()
 		try {
 			target = formation->getTarget(agent);
 
+			FColor color = FColor::Red;
+
 			everybodyKnows = true;
 
 			if (AModelController::waypointReached() && velocity.Size() < 0.2) {
 
 			} else {
-
+				color = FColor::Blue;
 				// Check if I am moving towards the target right now, else stop.
 				if (!isMovingTowardsTarget(target)) {
 					// Not moving towards the target == we should be stopping.
@@ -224,7 +225,6 @@ bool AModelController::updateTarget_still()
 					target = to2D(agent->GetActorLocation()) - to2D(velocity); // to2D(agent->GetActorLocation());	// Move towards myself.
 				}
 			}
-
 		} catch (std::exception e) {
 			// At least one of the other agents do not know where everybody else are.
 			// I will move towards all the other agents.

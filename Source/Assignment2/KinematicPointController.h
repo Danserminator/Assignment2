@@ -30,5 +30,7 @@ private:
 
 	virtual FVector2D vSample(float deltaSec) override;
 
+	virtual bool isMovingTowardsTarget(FVector2D target) override;
+
 	//virtual void checkObstacles(float deltaSec);
 };
