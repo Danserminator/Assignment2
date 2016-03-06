@@ -18,6 +18,8 @@ private:
 
 	TArray<FVector2D> vertices;
 
+	TArray<TArray<FVector2D>> edges;
+
 	TMap<FVector2D, FVector2D> verticesToOriginal;
 
 	float bufferSize = 5;
@@ -29,6 +31,8 @@ public:
 	TMultiMap<FVector2D, FVector2D> getGraph();
 
 	TArray<FVector2D> getVertices();
+
+	TArray<TArray<FVector2D>> getEdges();
 
 private:
 	void makeObstacles(TArray<FVector> corners);

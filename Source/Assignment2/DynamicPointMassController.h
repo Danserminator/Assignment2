@@ -19,7 +19,7 @@ class ASSIGNMENT2_API ADynamicPointMassController : public AModelController
 private:
 	FVector acceleration;
 	float const mass = 1;
-	float const aMax = 1;
+	float const dpmcAMax = 1;
 	float const dpmcVMax = 10;
 
 	float const safetyBuffer = 0;

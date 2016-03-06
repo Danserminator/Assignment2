@@ -9,7 +9,7 @@ void AVisibilityGraph::generateGraph(TArray<FVector> corners, TArray<AAgent*> ag
 {
 	makeObstacles(corners);
 
-	TArray<TArray<FVector2D>> edges = getEdges(corners);
+	edges = getEdges(corners);
 
 	vertices = createVertices();
 
@@ -40,6 +40,11 @@ TMultiMap<FVector2D, FVector2D> AVisibilityGraph::getGraph()
 TArray<FVector2D> AVisibilityGraph::getVertices()
 {
 	return vertices;
+}
+
+TArray<TArray<FVector2D>> AVisibilityGraph::getEdges()
+{
+	return edges;
 }
 
 void AVisibilityGraph::makeObstacles(TArray<FVector> corners)
@@ -97,6 +102,13 @@ TArray<TArray<FVector2D>> AVisibilityGraph::getEdges(TArray<FVector> map)
 		TArray<FVector2D> temp;
 		temp.Add(startLine);
 		temp.Add(endLine);
+
+		// Calculate the normal
+		FVector2D norm(endLine.Y - startLine.Y, endLine.X - startLine.X);
+		float abs = FMath::Sqrt(FVector2D::DotProduct(norm, norm));
+		norm /= abs;
+		temp.Add(norm);
+
 		edges.Add(temp);
 	}
 
