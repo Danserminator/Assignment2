@@ -5,7 +5,7 @@
 
 ADynamicCarController::ADynamicCarController()
 {
-	errorTolerance = 10;
+	errorTolerance = 5;
 }
 
 //GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Position: %s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
@@ -17,6 +17,68 @@ void ADynamicCarController::Tick(float DeltaSeconds)
 	if (play) {
 		float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
+		updateTarget();
+
+		if (first) {
+			first = false;
+			FRotator rotation = agent->GetActorRotation();
+			rotation.Yaw = getRotation(agent->GetActorLocation(), target);
+			agent->SetActorRotation(rotation);
+
+			FString str;
+
+			for (int32 c = 0; c < waypoints.Num(); c++) {
+				str.Append(waypoints[c].ToString());
+				str.Append(", ");
+			}
+
+			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Before: %s"), *str));
+
+			waypoints = DubinsPath::getPath(waypoints, to2D(agent->GetActorLocation()), rotation.Yaw, maxAngle, L);
+		
+			str = FString("");
+
+			for (int32 c = 0; c < waypoints.Num(); c++) {
+				str.Append(waypoints[c].ToString());
+				str.Append(", ");
+			}
+
+			writeWaypointsToFile("Waypoints.txt");
+
+			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("After: %s"), *str));
+		
+			if (waypoints.Num() > 0) {
+				target = waypoints[0];
+			}
+		}
+
+		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("%s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
+
+		DrawDebugLine(GWorld->GetWorld(), to3D(target), to3D(target) + collisionSize, collisionColor, false, 0.1, 0, 1);
+
+		float a = getAcceleration(deltaSec);
+
+		v += a;
+		
+		v = 10;
+
+		v = UKismetMathLibrary::FClamp(v, -vMax, vMax);
+
+		float rotation = rotate(deltaSec);
+
+		acceleration.X = a * UKismetMathLibrary::DegCos(rotation);
+		acceleration.Y = a * UKismetMathLibrary::DegSin(rotation);
+
+		drawLine(2 * acceleration / deltaSec, accelerationColor);
+
+		velocity.X = v * UKismetMathLibrary::DegCos(rotation);
+		velocity.Y = v * UKismetMathLibrary::DegSin(rotation);
+
+		setRotation();
+
+		agent->SetActorLocation(agent->GetActorLocation() + (velocity * deltaSec));
+
+		/*
 		if (!movingFormation) {
 			updateTarget();
 
@@ -132,6 +194,7 @@ void ADynamicCarController::Tick(float DeltaSeconds)
 				}
 			}
 		}
+		*/
 	}
 }
 
@@ -144,6 +207,7 @@ bool ADynamicCarController::lookingAtTarget()
 	return UKismetMathLibrary::Abs(wantedRotation - realRotation) < 0.1;
 }
 
+/*
 bool ADynamicCarController::waypointReached()
 {
 	if (AModelController::waypointReached()) {
@@ -167,6 +231,7 @@ bool ADynamicCarController::waypointReached()
 
 	return false;
 }
+*/
 
 float ADynamicCarController::getAcceleration(float deltaSec) const
 {
@@ -194,15 +259,15 @@ float ADynamicCarController::getAcceleration(float deltaSec) const
 
 float ADynamicCarController::rotate(float deltaSec) const
 {
-	float rotation = AModelController::getRotation(agent->GetActorLocation(), target);
+	float rotation = positiveAngle(AModelController::getRotation(agent->GetActorLocation(), target));
 
 	rotation -= agent->GetActorRotation().Yaw;
 
-	float curMaxAngle = maxAngle;					// Max angle for this tick
+	float curMaxAngle = maxAngle * deltaSec;					// Max angle for this tick
 
-	rotation = UKismetMathLibrary::ClampAngle(rotation, -maxAngle, maxAngle);
+	rotation = UKismetMathLibrary::ClampAngle(positiveAngle(rotation), -maxAngle, maxAngle);
 
-	rotation = deltaSec * UKismetMathLibrary::RadiansToDegrees(UKismetMathLibrary::DegTan(rotation));
+	rotation = UKismetMathLibrary::DegTan(positiveAngle(rotation));
 
 	rotation *= v / L;
 

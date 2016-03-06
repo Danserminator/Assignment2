@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ModelController.h"
+#include "DubinsPath.h"
 #include "DynamicCarController.generated.h"
 
 /**
@@ -16,7 +17,7 @@ class ASSIGNMENT2_API ADynamicCarController : public AModelController
 private:
 	FVector acceleration;
 	float const aMax = 1;
-	float const vMax = 100;
+	float const vMax = 10;
 	float const maxAngle = 57.2957795;
 	float const L = 10;
 	float const safetyBuffer = 1;
@@ -40,7 +41,7 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	virtual bool waypointReached() override;
+	//virtual bool waypointReached() override;
 
 	bool lookingAtTarget();
 
