@@ -9,6 +9,7 @@ ADifferentialDriveController::ADifferentialDriveController()
 {
 	errorTolerance = 0.001;
 	vMax = ddcVMax;
+	aMax = 2 * vMax;
 }
 
 void ADifferentialDriveController::Tick(float DeltaSeconds)

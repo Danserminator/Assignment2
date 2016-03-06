@@ -9,6 +9,7 @@ ADynamicPointMassController::ADynamicPointMassController()
 {
 	errorTolerance = 0.01;	// Because this is the bomb!
 	vMax = dpmcVMax;
+	aMax = dpmcAMax;
 }
 
 // Called every frame

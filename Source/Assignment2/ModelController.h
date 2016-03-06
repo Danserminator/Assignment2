@@ -26,8 +26,10 @@ public:
 	bool play;
 	
 protected:
+	float totalTime;
 	AAgent * agent;
 	AFormation * formation;
+	AVisibilityGraph * graph;
 
 	TArray<FVector2D> waypoints;
 	//bool followPath = false;
@@ -40,6 +42,7 @@ protected:
 
 	FVector velocity;
 	float vMax = 0;
+	float aMax = 0;								// TODO: Kör (2 * vMax) tills vidare
 
 	float errorTolerance = 3;					// Change this one in every model FFS!!!
 	
@@ -56,20 +59,20 @@ protected:
 	bool avoidAgents = false;
 	bool everybodyKnows = false;
 
-	bool searching = false;						// Whether the agent is searching for nearby actors or not
-	bool stopped = true;						// Agent has stopped moving after finding all agents
-	float searchSize = 10;						// Size of point representing target when searching for more agents
-	float radiusSegments = 24;					// # of segments in the circle representing radius
+	bool searching = false;							// Whether the agent is searching for nearby actors or not
+	bool stopped = true;							// Agent has stopped moving after finding all agents
+	float searchSize = 10;							// Size of point representing target when searching for more agents
+	float radiusSegments = 24;						// # of segments in the circle representing radius
 
-	float agentSearchScalar = 4;				// Scalar from agent radius to obstacle search distance
+	float agentSearchScalar = 4;					// Scalar from agent radius to obstacle search distance
 
-	bool collided = false;						// If agent has collided
-	int32 vSamples = 250;						// Number of velocity samples
-	TArray<TTuple<float, float, void *>> neighbours; //TMultiMap<float, FVector2D> neighbours;		// Neighbours of agent, in increasing distance
-		const float AGENT = 0;					// float that represents that neighbour is an agent
-		const float OBSTACLE = 1;				// float that represents that neighbour is an obstacle
-	float safetyFactor = 10;					// Higher safety = less 'agressive'
-	float agentRadiusScalar = 2;				// Scalar for agent radius, so agent is bigger when checking for collisions
+	bool collided = false;							// If agent has collided
+	int32 vSamples = 250;							// Number of velocity samples
+	TArray<TTuple<float, int32, int32>> neighbours;	// Neighbours of agent, in increasing distance
+		const int32 AGENT = 0;						// float that represents that neighbour is an agent
+		const int32 OBSTACLE = 1;					// float that represents that neighbour is an obstacle
+	float safetyFactor = 10;						// Higher safety = less 'agressive'
+	float agentRadiusScalar = 2;					// Scalar for agent radius, so agent is bigger when checking for collisions
 
 public:
 	// Called when the game starts or when spawned
@@ -120,13 +123,19 @@ protected:
 
 	void updateNeighbours();
 
+	void computeObstacleNeighbours();
+
 	void computeAgentNeighbours();
 
 	void adjustVelocity(FVector2D vPref, float deltaSec);
 
 	virtual FVector2D vSample(float deltaSec);
 
+	// Time to collision of a ray to a disc
 	float timeToCollision(FVector2D p, FVector2D v, FVector2D p2, float radius, bool collision);
+
+	// Time to collision of a ray to a line segment.
+	float timeToCollision(FVector2D p, FVector2D v, FVector2D a, FVector2D b, bool collision);
 
 	//FVector2D willCollide(AAgent * otherAgent);
 
