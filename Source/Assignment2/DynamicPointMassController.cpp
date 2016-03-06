@@ -30,7 +30,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 
 				if (t1 || t35 || t4) {
 					play = false;
-					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
 				}
 			} else {
 				acceleration = getAcceleration(deltaSec);
@@ -107,7 +107,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 
 				if (t1 || t35 || t4) {
 					play = false;
-					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
 				}
 			}
 			else {

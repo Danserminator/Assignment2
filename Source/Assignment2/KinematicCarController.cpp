@@ -18,7 +18,7 @@ void AKinematicCarController::Tick(float DeltaSeconds)
 
 			if (t35 || t4) {
 				play = false;
-				GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
+				GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
 			}
 		} else {
 			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();

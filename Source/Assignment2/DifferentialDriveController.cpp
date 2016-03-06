@@ -26,7 +26,7 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 
 			if (t1 || t35 || t4) {
 				play = false;
-				GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
+				GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
 			}
 		} else {
 			if (first) {

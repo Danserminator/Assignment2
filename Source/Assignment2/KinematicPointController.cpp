@@ -17,20 +17,11 @@ void AKinematicPointController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("%s\r\n"), *agent->GetActorLocation().ToString()));
-
 	if (play) {
 		updateTarget();
 
 		if (waypointReached()) {
-			bool t1 = !followPath && !movingFormation && !avoidAgents;
-			bool t35 = followPath && waypointsIndex >= waypoints.Num();
-			bool t4 = avoidAgents && !followPath;
-
-			if (t1 || t35 || t4) {
-				play = false;
-				GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
-			}
+			// TODO: Vet inte varför koden inte fungerar här
 		} else {
 			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
 
@@ -52,6 +43,17 @@ void AKinematicPointController::Tick(float DeltaSeconds)
 
 			agent->SetActorLocation(newLocation);
 			//agent->SetActorLocationAndRotation(newLocation, rotation);
+
+			if (waypointReached()) {
+				bool t1 = !followPath && !movingFormation && !avoidAgents;
+				bool t35 = followPath && waypointsIndex >= waypoints.Num();
+				bool t4 = avoidAgents && !followPath;
+
+				if (t1 || t35 || t4) {
+					play = false;
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Time: %f\r\n"), totalTime));
+				}
+			}
 		}
 	}
 }
