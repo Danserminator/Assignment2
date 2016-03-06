@@ -29,14 +29,14 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 			}
 
 			float deltaSec = GWorld->GetWorld()->GetDeltaSeconds();
-			
+
 			if (avoidAgents) {
 				FVector bestVel = getBestVelocity(deltaSec);
 
 				float distToGoal = FVector2D::Distance(target, to2D(agent->GetActorLocation()));
 
 				float bestDist = distToGoal;
-				float bestC = 0;
+				float bestC = 1;
 				FVector loc = agent->GetActorLocation();
 				for (float c = 0.1; c <= 1; c += 0.1) {
 					FVector tLoc = loc + c * bestVel;
@@ -51,43 +51,71 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 				FVector2D vPref = to2D(bestVel) * bestC;
 
 				adjustVelocity(vPref, deltaSec);
-				//velocity = to3D(vPref);
 
-				float f = 0;
 				float prevRot = agent->GetActorRotation().Yaw;
-				prevRot = UKismetMathLibrary::FMod((prevRot + 360), 360, f);
+
+				prevRot = positiveAngle(prevRot);
 
 				if (velocity == FVector::ZeroVector) {
 					float r = 2.0f*rand() - RAND_MAX;
 					float rot = agent->GetActorRotation().Yaw;
-					rot +=  r * maxAngle * deltaSec;
+					rot += r * (maxAngle / RAND_MAX) * deltaSec;
 					agent->SetActorRotation(FRotator(0, rot, 0));
 
-					rot = UKismetMathLibrary::FMod((rot + 360), 360, f);
+					rot = agent->GetActorRotation().Yaw;
 
-					if (FMath::Abs(prevRot - rot) > maxAngle * deltaSec) {
+					rot = positiveAngle(rot);
+
+					if (FMath::Abs(rot - prevRot) > maxAngle * deltaSec) {
 						bool isPref = velocity.Equals(to3D(vPref));
-						GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("%f vSize: %f, %d\r\n"), FMath::Abs(prevRot - rot) / deltaSec, velocity.Size2D() / deltaSec, isPref));
+						GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(prevRot - rot) / deltaSec, maxAngle, isPref));
 					}
 				} else {
-					setRotation();
+					float tarRot = velocity.Rotation().Yaw;
+					tarRot = positiveAngle(tarRot);
 
-					float rot = agent->GetActorRotation().Yaw;
-					rot = UKismetMathLibrary::FMod((rot + 360), 360, f);
+					float curRot = agent->GetActorRotation().Yaw;
+					curRot = positiveAngle(curRot);
 
-					if (FMath::Abs(prevRot - rot) > maxAngle * deltaSec + 0.1) {
-						bool isPref = velocity.Equals(to3D(vPref));
-						DrawDebugLine(GWorld->GetWorld(), agent->GetActorLocation(), agent->GetActorLocation() + collisionSize, FColor::Green, false, 0.1, 0, 1);
-						GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("%f vSize: %f, %d\r\n"), FMath::Abs(prevRot - rot) / deltaSec, velocity.Size2D() / deltaSec, isPref));
+					if (UKismetMathLibrary::Abs(tarRot - curRot) > 90) {
+						velocity = -velocity;
+						setRotation();
+						velocity = -velocity;
+
+						float rot = agent->GetActorRotation().Yaw;
+
+						rot = positiveAngle(rot);
+
+						if (FMath::Abs(rot - prevRot) > maxAngle * deltaSec + 0.1) {
+							bool isPref = velocity.Equals(to3D(vPref));
+							GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Yellow, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(prevRot - rot) / deltaSec, maxAngle, isPref));
+						}
+					} else {
+						setRotation();
+
+						float rot = agent->GetActorRotation().Yaw;
+
+						rot = positiveAngle(rot);
+
+						if (FMath::Abs(rot - prevRot) > maxAngle * deltaSec + 0.1) {
+							bool isPref = velocity.Equals(to3D(vPref));
+							DrawDebugLine(GWorld->GetWorld(), agent->GetActorLocation(), agent->GetActorLocation() + collisionSize, FColor::Yellow, false, 2, 0, 1);
+							GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(prevRot - rot) / deltaSec, maxAngle, isPref));
+						}
 					}
 				}
-				//agent->SetActorRotation(FRotator(0, velocity.Rotation().Yaw, 0));
+
+				if (velocity.Size2D() > vMax * deltaSec + 0.1) {
+					GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("Velocity: %f, Max velocity: %f"), velocity.Size2D() / deltaSec, vMax));
+				}
 
 				agent->SetActorLocation(loc + velocity);
-			} else {
+			}
+			else {
 				if (rotating) {
 					rotating = !rotate(deltaSec);
-				} else {
+				}
+				else {
 					velocity = getVelocity(deltaSec);
 
 					FVector currentLocation = agent->GetActorLocation();
@@ -130,11 +158,10 @@ FVector ADifferentialDriveController::getVelocity(float deltaSec)
 	newVelocity.Y = getYVelocity(deltaSec);
 
 	FVector2D remainingDistance = target - to2D(agent->GetActorLocation());
-	remainingDistance.X = UKismetMathLibrary::Abs(remainingDistance.X);
-	remainingDistance.Y = UKismetMathLibrary::Abs(remainingDistance.Y);
 
-	newVelocity.X = UKismetMathLibrary::FClamp(newVelocity.X, -remainingDistance.X, remainingDistance.X);
-	newVelocity.Y = UKismetMathLibrary::FClamp(newVelocity.Y, -remainingDistance.Y, remainingDistance.Y);
+	if (newVelocity.Size2D() > remainingDistance.Size()) {
+		newVelocity = newVelocity.GetClampedToSize2D(-UKismetMathLibrary::Abs(remainingDistance.Size()), UKismetMathLibrary::Abs(remainingDistance.Size()));
+	}
 
 	return newVelocity;
 }
@@ -144,20 +171,38 @@ FVector ADifferentialDriveController::getBestVelocity(float deltaSec)
 	float tarRot = getRotation(agent->GetActorLocation(), target);
 	float curRot = agent->GetActorRotation().Yaw;
 
+	tarRot = positiveAngle(tarRot);
+	curRot = positiveAngle(curRot);
+
 	float currentMaxAngle = maxAngle * deltaSec;
-	float cRot = UKismetMathLibrary::ClampAngle(tarRot - curRot, -currentMaxAngle, currentMaxAngle);
+
+	float cRot;
+
+	if (UKismetMathLibrary::Abs(tarRot - curRot) > 90) {
+		// We will drive backwards!
+
+		cRot = UKismetMathLibrary::ClampAngle(tarRot - curRot, 180 - currentMaxAngle, 180 + currentMaxAngle);
+		
+	} else {
+		// We will drive forwards!
+
+		cRot = UKismetMathLibrary::ClampAngle(tarRot - curRot, -currentMaxAngle, currentMaxAngle);
+	}
+
+	cRot = positiveAngle(cRot);
 	cRot += curRot;
 
-	FVector bestVel;
+	cRot = positiveAngle(cRot);
+
+	FVector bestVel(0, 0, 0);
 	bestVel.X = vMax * UKismetMathLibrary::DegCos(cRot) * deltaSec;
 	bestVel.Y = vMax * UKismetMathLibrary::DegSin(cRot) * deltaSec;
 
 	FVector2D remainingDistance = target - to2D(agent->GetActorLocation());
-	remainingDistance.X = UKismetMathLibrary::Abs(remainingDistance.X);
-	remainingDistance.Y = UKismetMathLibrary::Abs(remainingDistance.Y);
 
-	bestVel.X = UKismetMathLibrary::FClamp(bestVel.X, -remainingDistance.X, remainingDistance.X);
-	bestVel.Y = UKismetMathLibrary::FClamp(bestVel.Y, -remainingDistance.Y, remainingDistance.Y);
+	if (bestVel.Size2D() > remainingDistance.Size()) {
+		bestVel = bestVel.GetClampedToSize2D(-UKismetMathLibrary::Abs(remainingDistance.Size()), UKismetMathLibrary::Abs(remainingDistance.Size()));
+	}
 
 	return bestVel;
 }
@@ -176,6 +221,9 @@ FVector2D ADifferentialDriveController::vSample(float deltaSec)
 {
 	FVector2D vCand;
 	FVector nCand;
+	float curRot;
+	float newRot;
+	float test;
 	do {
 		do {
 			vCand = FVector2D(2.0f*rand() - RAND_MAX, 2.0f*rand() - RAND_MAX);
@@ -185,7 +233,25 @@ FVector2D ADifferentialDriveController::vSample(float deltaSec)
 
 		nCand = to3D(vCand);
 		nCand.Normalize();
-	} while (FMath::Abs(UKismetMathLibrary::DegAtan2(nCand.Y, nCand.X) - agent->GetActorRotation().Yaw) > maxAngle * deltaSec);
+
+		curRot = agent->GetActorRotation().Yaw;
+		curRot = positiveAngle(curRot);
+
+		newRot = to3D(vCand).Rotation().Yaw;	
+		newRot = positiveAngle(newRot);
+
+		test = FMath::Abs(newRot - curRot);
+
+		if (test > 90) {
+			// We cannot drive forward in this direction, can we drive backwards?
+
+			newRot += 180;
+			newRot = positiveAngle(newRot);
+
+			test = FMath::Abs(newRot - curRot);
+		}
+
+	} while (test > maxAngle * deltaSec);
 
 	return vCand;
 }

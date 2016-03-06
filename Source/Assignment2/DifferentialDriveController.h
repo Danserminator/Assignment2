@@ -6,19 +6,20 @@
 #include "Engine.h"
 #include "Agent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "General.h"
 #include "DifferentialDriveController.generated.h"
 
 /**
- * 
- */
+*
+*/
 UCLASS()
 class ASSIGNMENT2_API ADifferentialDriveController : public AModelController
 {
 	GENERATED_BODY()
-	
+
 private:
-	float const ddcVMax = 10;
-	float const maxAngle = 18;
+	float const ddcVMax = 50;
+	float const maxAngle = 57.2957795;
 	bool rotating = true;
 
 	bool first = true;

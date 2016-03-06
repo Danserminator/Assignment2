@@ -12,3 +12,8 @@ FVector to3D(FVector2D vector)
 {
 	return FVector(vector, 0);
 }
+
+float positiveAngle(float angle)
+{
+	return FMath::Fmod((angle + 180), 360) - 180;
+}
