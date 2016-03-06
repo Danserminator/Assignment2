@@ -263,7 +263,7 @@ FVector2D AModelController::approachAgents()
 {
 	TArray<AAgent *> agents = agent->getSeenAgents();
 
-	FVector2D goal;
+	FVector2D goal(0, 0);
 	for (int32 c = 0; c < agents.Num(); c++) {
 		goal += to2D(agents[c]->GetActorLocation() - agent->GetActorLocation());
 	}

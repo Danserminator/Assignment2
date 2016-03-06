@@ -24,7 +24,7 @@ private:
 
 	float const safetyBuffer = 0;
 
-	float everybodyKnowsSpeed = UKismetMathLibrary::FMax(aMax * 5, vMax);
+	float everybodyKnowsSpeed = UKismetMathLibrary::FMax(dpmcAMax * 5, dpmcVMax);
 
 	bool moveTarget = false;
 	bool firstTry = true;

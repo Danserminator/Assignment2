@@ -100,8 +100,10 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 		} else {
 			updateTarget();
 
+			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("%s"), *target.ToString()));
+
 			if (waypointReached()) {
-				bool t1 = !followPath && !movingFormation && !avoidAgents;
+				bool t1 = agent->getSeeRadius() == 0 && !followPath && !movingFormation && !avoidAgents;
 				bool t35 = followPath && waypointsIndex >= waypoints.Num();
 				bool t4 = avoidAgents && !followPath;
 
@@ -111,15 +113,14 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				}
 			}
 			else {
-
 				acceleration = getAcceleration(deltaSec);
-
-				//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Acceleration: %f\r\n"), acceleration.Size2D() / deltaSec));
 
 				drawLine(2 * acceleration, accelerationColor);
 
-				velocity += acceleration;
-
+				velocity += acceleration; 
+				
+				FVector oV = velocity;
+				
 				if (!everybodyKnows && !movingFormation) {
 					velocity = velocity.GetClampedToSize(-everybodyKnowsSpeed, everybodyKnowsSpeed);
 				}
@@ -134,7 +135,6 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				setRotation();
 
 				agent->SetActorLocation(newLocation);
-				//agent->SetActorLocationAndRotation(newLocation, rotation);
 			}
 		} /*else {
 			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("%s -> %s"), *to2D(agent->GetActorLocation()).ToString(), *target.ToString()));
