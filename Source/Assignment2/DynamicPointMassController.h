@@ -20,7 +20,7 @@ private:
 	FVector acceleration;
 	float const mass = 1;
 	float const dpmcAMax = 1;
-	float const dpmcVMax = 10;
+	float const dpmcVMax = 100;
 
 	float const safetyBuffer = 0;
 
