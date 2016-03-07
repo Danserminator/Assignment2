@@ -66,11 +66,19 @@ void AKinematicCarController::Tick(float DeltaSeconds)
 		float rot = agent->GetActorRotation().Yaw;
 
 		if (velocity.Size2D() != 0) {
-			setRotation();
+			if (angleDiff(rot, velocity.Rotation().Yaw) > 90) {
+				velocity = -velocity;
+				setRotation();
+				velocity = -velocity;
+			} else {
+				setRotation();
+			}
 		}
 
 		if (UKismetMathLibrary::Abs(angleDiff(rot, agent->GetActorRotation().Yaw)) / deltaSec > maxAngle * (vMax / L) + 5) {
-			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("rot: %f yaw: %f -> %f [%f]"), rot, agent->GetActorRotation().Yaw, angleDiff(rot, agent->GetActorRotation().Yaw), UKismetMathLibrary::Abs(angleDiff(rot, agent->GetActorRotation().Yaw)) / deltaSec));
+			GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("rot: %f yaw: %f -> %f (%f)      %d   %s -> %s"), rot, agent->GetActorRotation().Yaw, angleDiff(rot, agent->GetActorRotation().Yaw), UKismetMathLibrary::Abs(angleDiff(rot, agent->GetActorRotation().Yaw)) / deltaSec, vPref.Equals(velocity), *to2D(vPref).ToString(), *to2D(velocity).ToString()));
+			DrawDebugLine(GWorld->GetWorld(), FVector(to2D(agent->GetActorLocation()), 20), FVector(to2D(agent->GetActorLocation()), 30), FColor::Red, false, 0.5, 0, 1);
+			GEngine->DeferredCommands.Add(TEXT("pause"));
 		}
 
 		agent->SetActorLocation(agent->GetActorLocation() + velocity);
@@ -128,7 +136,60 @@ float AKinematicCarController::getYVelocity(float hyp) const
 FVector2D AKinematicCarController::vSample(float deltaSec)
 {
 	FVector2D vCand;
+	float curRot, newRot, d;
 
+	do {
+		do {
+			vCand = FVector2D(2.0f*rand() - RAND_MAX, 2.0f*rand() - RAND_MAX);
+		} while (FVector2D::DotProduct(vCand, vCand) > (((float)RAND_MAX) * ((float)RAND_MAX)));
+
+		vCand *= (vMax / RAND_MAX) * deltaSec;
+
+		curRot = agent->GetActorRotation().Yaw;
+		curRot = positiveAngle(curRot);
+
+		newRot = to3D(vCand).Rotation().Yaw;
+		newRot = positiveAngle(newRot);
+
+		d = FMath::Abs(newRot - curRot);
+
+		if (d > 90) {
+			// We cannot drive forward in this direction, can we drive backwards?
+
+			newRot += 180;
+			newRot = positiveAngle(newRot);
+
+			d = FMath::Abs(newRot - curRot);
+		}
+
+	} while (d > maxAngle * deltaSec);
+
+	/*
+	FVector2D vCand;
+	float d, curRot, newRot;
+
+	bool reversed;
+
+	do {
+		reversed = false;
+		do {
+			vCand = FVector2D(2.0f*rand() - RAND_MAX, 2.0f*rand() - RAND_MAX);
+		} while (FVector2D::DotProduct(vCand, vCand) > (((float)RAND_MAX) * ((float)RAND_MAX)));
+
+		vCand *= (vMax / RAND_MAX) * deltaSec;
+
+		curRot = agent->GetActorRotation().Yaw;
+
+		newRot = to3D(vCand).Rotation().Yaw;
+
+		d = angleDiff(curRot, newRot);
+		if (d > 90) {
+			reversed = true;
+			d = angleDiff(curRot, newRot + 180);
+		}
+	} while (d > maxAngle * deltaSec);*/
+
+	/*
 	float tVMax = vMax * ((double)rand() / RAND_MAX);
 
 	//(2 * ((double)rand() / RAND_MAX) - 1)
@@ -151,6 +212,7 @@ FVector2D AKinematicCarController::vSample(float deltaSec)
 	vCand = FVector2D(vMax * UKismetMathLibrary::DegCos(rotation) * deltaSec, vMax * UKismetMathLibrary::DegSin(rotation) * deltaSec);
 
 	vCand = to2D(to3D(vCand).GetClampedToMaxSize2D(vMax));
+	*/
 
 	/*
 	FVector nCand;

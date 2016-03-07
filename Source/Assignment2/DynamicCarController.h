@@ -16,9 +16,9 @@ class ASSIGNMENT2_API ADynamicCarController : public AModelController
 
 private:
 	FVector acceleration;
-	float const aMax = 1;
-	float const vMax = 10;
-	float const maxAngle = 40; // 57.2957795;
+	float const dccAMax = 1;
+	float const dccVMax = 10;
+	float const maxAngle = 57.2957795;
 	float const L = 10;
 	float const safetyBuffer = 1;
 
@@ -54,4 +54,6 @@ private:
 	virtual bool updateTarget_moving() override;
 
 	virtual void simulate();
+
+	virtual FVector2D vSample(float deltaSec) override;
 };
