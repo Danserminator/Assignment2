@@ -63,7 +63,7 @@ void AMapGenerator::generateAgents(TArray<AAgent *> & agents) // float r, AForma
 
 	// Spawn agents
 	for (int32 c = 0; c < locations.Num(); c++) {
-		FVector location = FVector(gridToLocation(locations[c][0], locations[c][1]), 0);
+		FVector location = FVector(gridToLocation(locations[c][0], locations[c][1]), 20);
 		AAgent * agent = GWorld->GetWorld()->SpawnActor<AAgent>(agentBP, location, { 0,0,0 });
 
 		agentsPositions.Add(FVector2D(locations[c][0], locations[c][1]));
@@ -71,7 +71,7 @@ void AMapGenerator::generateAgents(TArray<AAgent *> & agents) // float r, AForma
 		agents.Add(agent);
 
 		#ifdef OUTPUT
-		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%f, %f}\r\n"), c, agents[c]->GetActorLocation().X, agents[c]->GetActorLocation().Y));
+		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Magenta, FString::Printf(TEXT("Agent #%d: {%s}\r\n"), c, *agents[c]->GetActorLocation().ToString()));
 		#endif
 	}
 
@@ -84,6 +84,19 @@ void AMapGenerator::generateAgents(TArray<AAgent *> & agents) // float r, AForma
 
 void AMapGenerator::generateFormation(float d, TArray<FVector2D> & positions)
 {
+	TArray<TArray<float>> formation = readData(formationsFile);
+
+	int32 yMax = 0, xMax = 0;
+	for (int32 c = 0; c < formation.Num(); c++) {
+		if (xMax < formation[c][0]) xMax = formation[c][0];
+		if (yMax < formation[c][1]) yMax = formation[c][1];
+	}
+
+	for (int32 c = 0; c < formation.Num(); c++) {
+		positions.Add(gridToLocation((formation[c][0] - (xMax / 2)) * d, (formation[c][1] - (yMax / 2)) * d));
+	}
+
+	/*
 	int32 num = 10;										// TODO: FIX?
 	int32 yLoc[] = { 0,1,2,3,0,1,2,3,1,2 };				// Y-locations for formation
 	int32 xLoc[] = { 0,0,0,0,1,1,1,1,2,2 };				// X-locations for formation
@@ -99,7 +112,7 @@ void AMapGenerator::generateFormation(float d, TArray<FVector2D> & positions)
 		#ifdef OUTPUT
 		//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Blue, FString::Printf(TEXT("Position #%d: {%f, %f}\r\n"), c, positions[c].X, positions[c].Y));
 		#endif
-	}
+	}*/
 }
 
 void AMapGenerator::generateCustomers(TArray<FVector2D> & customers)

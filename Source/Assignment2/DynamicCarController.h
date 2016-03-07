@@ -18,7 +18,7 @@ private:
 	FVector acceleration;
 	float const dccAMax = 1;
 	float const dccVMax = 10;
-	float const maxAngle = 57.2957795;
+	float const maxAngle = 45;
 	float const L = 10;
 	float const safetyBuffer = 1;
 

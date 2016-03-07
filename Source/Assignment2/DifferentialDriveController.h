@@ -18,8 +18,8 @@ class ASSIGNMENT2_API ADifferentialDriveController : public AModelController
 	GENERATED_BODY()
 
 private:
-	float const ddcVMax = 50;
-	float const maxAngle = 57.2957795;
+	float const ddcVMax = 10;
+	float const maxAngle = 30;
 	bool rotating = true;
 
 	bool first = true;

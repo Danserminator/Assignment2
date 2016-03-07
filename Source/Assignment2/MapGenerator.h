@@ -21,6 +21,7 @@ class ASSIGNMENT2_API AMapGenerator : public ALevelScriptActor
 
 	private:
 	const FString inputFolder = "Input Data/";					// Location of all input files
+	const FString formationsFile = "formation.txt";				// Name of file that contains goal positions
 	const FString obstacleFile = "obstacles.txt";				// Name of file that contains obstacles
 	const FString positionsFile = "positions.txt";				// Name of file that contains agent positions
 	const FString customersFile = "customers.txt";				// Name of file that contains customer positions

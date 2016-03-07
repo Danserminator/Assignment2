@@ -120,7 +120,7 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 				agent->SetActorLocation(loc + velocity);
 
 				if (followPath && !vPref.Equals(velocity)) {
-					updateWaypoints();	// If we have gone of course we will find a new path.
+					//updateWaypoints();	// If we have gone of course we will find a new path.
 				}
 			}
 			else {
