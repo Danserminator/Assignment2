@@ -32,8 +32,10 @@ protected:
 	AVisibilityGraph * graph;
 
 	TArray<FVector2D> waypoints;
+	TArray<FVector2D> customers;
 	//bool followPath = false;
 	int32 waypointsIndex = 0;
+	int32 customersIndex = 0;
 
 	FVector2D target;
 	

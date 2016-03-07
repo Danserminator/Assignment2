@@ -74,15 +74,15 @@ void AModelController::setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> 
 {
 	followPath = true;
 	this->graph = graph;
+	this->customers = customers;
 
 	waypoints = TArray<FVector2D>();
 
 	if (customers.Num() != 0) {
 		waypoints = AStar::getPath(graph->getGraph(), graph->getVertices(), getClosest(graph->getVertices(), to2D(agent->GetActorLocation())), customers[0]);
-	} else {
-		waypoints.Add(to2D(agent->GetActorLocation()));
+		waypoints.RemoveAt(0);	// Remove our current position
 	}
-	
+
 	for (int32 c = 1; c < customers.Num(); c++) {
 		TArray<FVector2D> path = AStar::getPath(graph->getGraph(), graph->getVertices(), customers[c - 1], customers[c]);
 		path.RemoveAt(0);
@@ -92,16 +92,34 @@ void AModelController::setWaypoints(AVisibilityGraph * graph, TArray<FVector2D> 
 	/*
 	FString str;
 	for (int32 c = 0; c < waypoints.Num(); c++) {
-		str.Append("{");
-		str.Append(FString::SanitizeFloat(waypoints[c].X));
-		str.Append(", ");
-		str.Append(FString::SanitizeFloat(waypoints[c].Y));
-		str.Append("} ");
+	str.Append("{");
+	str.Append(FString::SanitizeFloat(waypoints[c].X));
+	str.Append(", ");
+	str.Append(FString::SanitizeFloat(waypoints[c].Y));
+	str.Append("} ");
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("%s"), *str));
 	*/
 
 	writeWaypointsToFile("Waypoints.txt");
+}
+
+void AModelController::updateWaypoints()
+{
+	waypoints = TArray<FVector2D>();
+
+	if (customersIndex < customers.Num()) {
+		waypoints = AStar::getPath(graph->getGraph(), graph->getVertices(), getClosest(graph->getVertices(), to2D(agent->GetActorLocation())), customers[customersIndex]);
+		waypoints.RemoveAt(0);	// Remove our current position
+	}
+
+	for (int32 c = customersIndex + 1; c < customers.Num(); c++) {
+		TArray<FVector2D> path = AStar::getPath(graph->getGraph(), graph->getVertices(), customers[c - 1], customers[c]);
+		path.RemoveAt(0);
+		waypoints.Append(path);
+	}
+
+	waypointsIndex = 0;
 }
 
 void AModelController::setGoal(FVector2D goal)
@@ -158,10 +176,17 @@ bool AModelController::updateTarget_path()
 
 	bool reached = waypointReached(); // && velocity.Size() == 0;		// Check if it is at the target and is standing still
 	if (reached) {
+		if (customersIndex < customers.Num() && waypoints[waypointsIndex].Equals(customers[customersIndex], 0)) {
+			customersIndex++;
+		}
+
 		waypointsIndex++;
 	}
 	if (waypointsIndex < waypoints.Num()) {
 		target = waypoints[waypointsIndex];
+	}
+	else {
+		target = to2D(agent->GetActorLocation());
 	}
 
 	return reached;
