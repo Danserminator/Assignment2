@@ -56,13 +56,13 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 					}
 				}
 
-				FVector2D vPref = to2D(bestVel) * bestC;
+				FVector vPref = bestVel * bestC;
 
-				adjustVelocity(vPref, deltaSec);
+				adjustVelocity(to2D(vPref), deltaSec);
 
 				float prevRot = agent->GetActorRotation().Yaw;
 
-				prevRot = positiveAngle(prevRot);
+				//prevRot = positiveAngle(prevRot);
 
 				if (velocity == FVector::ZeroVector) {
 					float r = 2.0f*rand() - RAND_MAX;
@@ -72,43 +72,43 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 
 					rot = agent->GetActorRotation().Yaw;
 
-					rot = positiveAngle(rot);
+					//rot = positiveAngle(rot);
 
-					if (FMath::Abs(rot - prevRot) > maxAngle * deltaSec) {
-						bool isPref = velocity.Equals(to3D(vPref));
-						GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(prevRot - rot) / deltaSec, maxAngle, isPref));
+					if (FMath::Abs(angleDiff(rot, prevRot)) > maxAngle * deltaSec) {
+						bool isPref = velocity.Equals(vPref);
+						GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Green, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(angleDiff(rot, prevRot)) / deltaSec, maxAngle, isPref));
 					}
 				} else {
 					float tarRot = velocity.Rotation().Yaw;
-					tarRot = positiveAngle(tarRot);
+					//tarRot = positiveAngle(tarRot);
 
 					float curRot = agent->GetActorRotation().Yaw;
-					curRot = positiveAngle(curRot);
+					//curRot = positiveAngle(curRot);
 
-					if (UKismetMathLibrary::Abs(tarRot - curRot) > 90) {
+					if (FMath::Abs(angleDiff(tarRot, curRot)) > 90) {
 						velocity = -velocity;
 						setRotation();
 						velocity = -velocity;
 
 						float rot = agent->GetActorRotation().Yaw;
 
-						rot = positiveAngle(rot);
+						//rot = positiveAngle(rot);
 
-						if (FMath::Abs(rot - prevRot) > maxAngle * deltaSec + 0.1) {
-							bool isPref = velocity.Equals(to3D(vPref));
-							GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Yellow, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(prevRot - rot) / deltaSec, maxAngle, isPref));
+						if (FMath::Abs(angleDiff(rot, prevRot)) > maxAngle * deltaSec + 0.1) {
+							bool isPref = velocity.Equals(vPref);
+							GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Yellow, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(angleDiff(rot, prevRot)) / deltaSec, maxAngle, isPref));
 						}
 					} else {
 						setRotation();
 
 						float rot = agent->GetActorRotation().Yaw;
 
-						rot = positiveAngle(rot);
+						//rot = positiveAngle(rot);
 
-						if (FMath::Abs(rot - prevRot) > maxAngle * deltaSec + 0.1) {
-							bool isPref = velocity.Equals(to3D(vPref));
+						if (FMath::Abs(angleDiff(rot, prevRot)) > maxAngle * deltaSec + 0.1) {
+							bool isPref = velocity.Equals(vPref);
 							DrawDebugLine(GWorld->GetWorld(), agent->GetActorLocation(), agent->GetActorLocation() + collisionSize, FColor::Yellow, false, 2, 0, 1);
-							GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(prevRot - rot) / deltaSec, maxAngle, isPref));
+							GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("Rotation: %f, Max rotation: %f, Is pref: %d"), FMath::Abs(angleDiff(rot, prevRot)) / deltaSec, maxAngle, isPref));
 						}
 					}
 				}
@@ -118,6 +118,10 @@ void ADifferentialDriveController::Tick(float DeltaSeconds)
 				}
 
 				agent->SetActorLocation(loc + velocity);
+
+				if (followPath && !vPref.Equals(velocity)) {
+					updateWaypoints();	// If we have gone of course we will find a new path.
+				}
 			}
 			else {
 				if (rotating) {
@@ -179,14 +183,14 @@ FVector ADifferentialDriveController::getBestVelocity(float deltaSec)
 	float tarRot = getRotation(agent->GetActorLocation(), target);
 	float curRot = agent->GetActorRotation().Yaw;
 
-	tarRot = positiveAngle(tarRot);
-	curRot = positiveAngle(curRot);
+	//tarRot = positiveAngle(tarRot);
+	//curRot = positiveAngle(curRot);
 
 	float currentMaxAngle = maxAngle * deltaSec;
 
 	float cRot;
 
-	if (UKismetMathLibrary::Abs(tarRot - curRot) > 90) {
+	if (UKismetMathLibrary::Abs(angleDiff(tarRot, curRot)) > 90) {
 		// We will drive backwards!
 
 		cRot = UKismetMathLibrary::ClampAngle(tarRot - curRot, 180 - currentMaxAngle, 180 + currentMaxAngle);
@@ -197,10 +201,10 @@ FVector ADifferentialDriveController::getBestVelocity(float deltaSec)
 		cRot = UKismetMathLibrary::ClampAngle(tarRot - curRot, -currentMaxAngle, currentMaxAngle);
 	}
 
-	cRot = positiveAngle(cRot);
+	//cRot = positiveAngle(cRot);
 	cRot += curRot;
 
-	cRot = positiveAngle(cRot);
+	//cRot = positiveAngle(cRot);
 
 	FVector bestVel(0, 0, 0);
 	bestVel.X = vMax * UKismetMathLibrary::DegCos(cRot) * deltaSec;
@@ -243,20 +247,20 @@ FVector2D ADifferentialDriveController::vSample(float deltaSec)
 		nCand.Normalize();
 
 		curRot = agent->GetActorRotation().Yaw;
-		curRot = positiveAngle(curRot);
+		//curRot = positiveAngle(curRot);
 
 		newRot = to3D(vCand).Rotation().Yaw;	
-		newRot = positiveAngle(newRot);
+		//newRot = positiveAngle(newRot);
 
-		test = FMath::Abs(newRot - curRot);
+		test = FMath::Abs(angleDiff(newRot, curRot));
 
 		if (test > 90) {
 			// We cannot drive forward in this direction, can we drive backwards?
 
 			newRot += 180;
-			newRot = positiveAngle(newRot);
+			//newRot = positiveAngle(newRot);
 
-			test = FMath::Abs(newRot - curRot);
+			test = FMath::Abs(angleDiff(newRot, curRot));
 		}
 
 	} while (test > maxAngle * deltaSec);
