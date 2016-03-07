@@ -122,6 +122,10 @@ TArray<FVector2D> DubinsPath::getPath(TArray<FVector2D> waypoints, FVector2D loc
 			}
 		}
 
+		if (!done) {
+			return TArray<FVector2D>();
+		}
+
 		currentLocation = currentWaypoint;
 		currentRotation = targetRotation;
 	}
@@ -145,7 +149,7 @@ bool DubinsPath::validRoute(TArray<FVector2D> route, FVector2D currentLocation, 
 
 	float stepSize = 0.02;
 
-	float v = 1;
+	float v = 10;
 
 	TArray<TArray<FVector2D>> edges = vGraph->getEdges();
 
