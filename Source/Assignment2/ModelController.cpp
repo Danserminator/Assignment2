@@ -15,7 +15,7 @@ void AModelController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (play) {
+	if (play && DeltaTime < 1) {
 		totalTime += DeltaTime;
 	}
 

@@ -15,5 +15,17 @@ FVector to3D(FVector2D vector)
 
 float positiveAngle(float angle)
 {
-	return FMath::Fmod((angle + 180), 360) - 180;
+	if (angle >= 0)	return angle;
+
+	return FMath::Fmod((angle + 360), 360);
+}
+
+float angleDiff(float a1, float a2)
+{
+	float delta = FMath::Max(a1, a2) - FMath::Min(a1, a2);
+	if (180 < delta) {
+		delta = 360 - delta;
+	}
+
+	return delta;
 }
