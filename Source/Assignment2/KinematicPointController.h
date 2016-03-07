@@ -17,7 +17,7 @@ class ASSIGNMENT2_API AKinematicPointController : public AModelController
 	GENERATED_BODY()
 	
 private:
-	float const kpcVMax = 100;
+	float const kpcVMax = 5;
 
 public:
 	AKinematicPointController();

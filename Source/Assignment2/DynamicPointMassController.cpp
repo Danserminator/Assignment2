@@ -22,6 +22,7 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 
 		if (avoidAgents) {
 			updateTarget();
+			//target = waypoints[waypoints.Num() - 1];
 
 			if (waypointReached()) {
 				bool t1 = !followPath && !movingFormation && !avoidAgents;
@@ -95,6 +96,11 @@ void ADynamicPointMassController::Tick(float DeltaTime)
 				setRotation();
 
 				agent->SetActorLocation(newLocation);
+
+				/*
+				if (!vPref.Equals(velocity)) {
+					updateWaypoints();
+				}*/
 			}
 
 		} else {
@@ -338,7 +344,7 @@ bool ADynamicPointMassController::updateTarget_moving()
 
 float ADynamicPointMassController::getSearchDistance()
 {
-	return 5000;
+	return 50;
 	return vMax * vMax / (aMax * 2);
 	return FMath::Max(Super::getSearchDistance(), getBrakeDistance() * searchRadiusScalar);
 }

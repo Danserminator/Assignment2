@@ -73,7 +73,7 @@ protected:
 	TArray<TTuple<float, int32, int32>> neighbours;	// Neighbours of agent, in increasing distance
 		const int32 AGENT = 0;						// float that represents that neighbour is an agent
 		const int32 OBSTACLE = 1;					// float that represents that neighbour is an obstacle
-	float safetyFactor = 10;						// Higher safety = less 'agressive'
+	float safetyFactor = 1;							// Higher safety = less 'agressive'
 	float agentRadiusScalar = 2;					// Scalar for agent radius, so agent is bigger when checking for collisions
 
 public:
@@ -144,4 +144,6 @@ protected:
 	virtual float getSearchDistance();
 
 	virtual float getVMax();
+
+	virtual void updateWaypoints();
 };
